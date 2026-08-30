@@ -1,0 +1,1932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transition Path</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FBF9F3;
+    --ink:#1F2A44;
+    --muted:#6B7280;
+    --track:#D8DCE3;
+    --card:#FFFFFF;
+
+    --olive:#7C8E42;   --olive-sh:#586A2A;
+    --khaki:#D6A756;   --khaki-sh:#B3823A;
+    --stblue:#4A7FBF;  --stblue-sh:#2F5A94;
+    --oldglory:#C8283F;--oldglory-sh:#961C2E;
+    --navy:#324875;    --navy-sh:#1D2C4D;
+    --bronze:#A0682D;  --bronze-sh:#7C4F20;
+    --gold:#E8B923;    --gold-sh:#B8900F;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);color:var(--ink);}
+  body{
+    font-family:'Nunito',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    padding-bottom:40px;
+  }
+  .wrap{max-width:440px;margin:0 auto;padding:24px 18px 0;}
+
+  .eyebrow{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--oldglory);
+    margin-bottom:4px;
+  }
+  h1{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:800;
+    font-size:27px;
+    line-height:1.15;
+    margin:0 0 8px 0;
+  }
+  .sub{
+    color:var(--muted);
+    font-size:14px;
+    font-weight:600;
+    line-height:1.5;
+    margin-bottom:18px;
+  }
+
+  /* progress pips */
+  .progress{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:999px;
+    padding:8px 14px;
+    width:fit-content;
+    margin-bottom:6px;
+  }
+  .pip{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--track);
+    transition:background .2s ease, transform .2s ease;
+  }
+  .pip.on{transform:scale(1.15);}
+  .progress-label{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    color:var(--muted);
+    margin-left:4px;
+    white-space:nowrap;
+  }
+
+  /* path */
+  .path-container{
+    position:relative;
+    margin-top:26px;
+  }
+  .path-container svg{
+    position:absolute;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+  }
+  .node-wrap{
+    position:absolute;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:96px;
+    transform:translateX(-50%);
+  }
+  .node-btn{
+    all:unset;
+    cursor:pointer;
+    width:64px;height:64px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:26px;
+    position:relative;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .node-btn:active{transform:translateY(4px);}
+  .node-btn.big{width:80px;height:80px;font-size:32px;}
+
+  .node-badge{
+    position:absolute;
+    top:-4px; right:-4px;
+    width:22px;height:22px;
+    border-radius:50%;
+    background:#fff;
+    border:2px solid var(--olive);
+    color:var(--olive);
+    font-size:13px;
+    font-weight:800;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .node-pulse::before{
+    content:'';
+    position:absolute;
+    inset:-6px;
+    border-radius:50%;
+    border:2px solid currentColor;
+    opacity:0.55;
+    animation:pulse 2.2s ease-out infinite;
+  }
+  @keyframes pulse{
+    0%{transform:scale(1); opacity:0.5;}
+    100%{transform:scale(1.35); opacity:0;}
+  }
+
+  .node-label{
+    margin-top:8px;
+    text-align:center;
+  }
+  .node-t{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    color:var(--ink);
+  }
+  .node-title{
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--muted);
+    max-width:90px;
+    line-height:1.25;
+    margin-top:1px;
+  }
+
+  footer{
+    max-width:440px;
+    margin:20px auto 0;
+    padding:0 18px;
+    font-size:11.5px;
+    color:var(--muted);
+    line-height:1.6;
+    font-weight:600;
+  }
+
+  /* modal */
+  .backdrop{
+    position:fixed; inset:0;
+    background:rgba(59,53,71,0.55);
+    opacity:0; pointer-events:none;
+    transition:opacity .2s ease;
+    z-index:40;
+  }
+  .backdrop.show{opacity:1; pointer-events:auto;}
+
+  .sheet{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    max-width:440px;
+    margin:0 auto;
+    background:var(--card);
+    border-radius:26px 26px 0 0;
+    transform:translateY(105%);
+    transition:transform .35s cubic-bezier(0.34,1.56,0.64,1);
+    z-index:41;
+    max-height:86vh;
+    overflow-y:auto;
+    padding-bottom:22px;
+  }
+  .sheet.show{transform:translateY(0);}
+
+  .sheet-top{
+    border-radius:26px 26px 0 0;
+    padding:20px 20px 16px;
+    color:#fff;
+    position:relative;
+  }
+  .sheet-close{
+    all:unset;
+    position:absolute;
+    top:14px; right:16px;
+    width:28px;height:28px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.28);
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px;
+    cursor:pointer;
+    font-weight:700;
+  }
+  .sheet-icon{font-size:30px; margin-bottom:6px; display:block;}
+  .sheet-t{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    opacity:0.9;
+  }
+  .sheet-title{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:800;
+    font-size:21px;
+    margin:2px 0 8px;
+  }
+  .sheet-blurb{
+    font-size:13.5px;
+    font-weight:600;
+    line-height:1.5;
+    opacity:0.95;
+  }
+
+  .sheet-body{padding:18px 20px 4px;}
+  .section-label{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin-bottom:10px;
+  }
+
+  .chip{
+    all:unset;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    background:#F7F5EF;
+    border:2px solid #EDE9DE;
+    border-radius:16px;
+    padding:12px 14px;
+    margin-bottom:9px;
+    cursor:pointer;
+    transition:background .15s ease, border-color .15s ease;
+    box-sizing:border-box;
+  }
+  .chip .box{
+    flex-shrink:0;
+    width:22px;height:22px;
+    border-radius:7px;
+    border:2px solid #D8D3C4;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px;
+    color:#fff;
+    font-weight:800;
+    transition:all .15s ease;
+  }
+  .chip .txt{
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--ink);
+    line-height:1.35;
+  }
+  .chip.checked{background:#F0F3E4; border-color:#CFDBAE;}
+  .chip.recommended .box{border-color:#EAD9B8;}
+  .chip.recommended.checked{background:#FBF3E3; border-color:#EDD8A8;}
+  .chip.recommended.checked .box{background:var(--khaki); border-color:var(--khaki);}
+  .chip.recommended.checked .txt{text-decoration-color:#EDD8A8;}
+
+  .must-label{color:var(--olive-sh);}
+  .rec-label{color:var(--khaki-sh); margin-top:4px;}
+  .chip.checked .box{background:var(--olive); border-color:var(--olive);}
+  .chip.checked .txt{color:var(--muted); text-decoration:line-through; text-decoration-color:#CFDBAE;}
+
+  .done-msg{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--olive-sh);
+    background:#F0F3E4;
+    border-radius:12px;
+    padding:9px 12px;
+    margin:2px 0 16px;
+    display:none;
+  }
+  .done-msg.show{display:block;}
+
+  .link-row{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding-bottom:6px;
+    margin-bottom:8px;
+  }
+  .link-pill{
+    flex-shrink:0;
+    font-family:'Baloo 2',sans-serif;
+    font-size:12px;
+    font-weight:700;
+    text-decoration:none;
+    color:#fff;
+    padding:9px 14px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+
+  .got-it{
+    all:unset;
+    display:block;
+    width:calc(100% - 40px);
+    margin:14px 20px 0;
+    text-align:center;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    color:#fff;
+    padding:14px;
+    border-radius:16px;
+    cursor:pointer;
+    box-sizing:border-box;
+  }
+  .got-it:active{transform:translateY(3px);}
+
+  /* tabs */
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  body{padding-bottom:86px;}
+
+  .tabbar{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    max-width:440px;
+    margin:0 auto;
+    background:var(--card);
+    border-top:2px solid var(--track);
+    display:flex;
+    padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+    z-index:30;
+  }
+  .tab-btn{
+    all:unset;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    padding:6px 0;
+    cursor:pointer;
+    border-radius:12px;
+  }
+  .tab-icon{font-size:20px; opacity:0.5;}
+  .tab-label{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:11px;
+    color:var(--muted);
+  }
+  .tab-btn.active .tab-icon{opacity:1;}
+  .tab-btn.active .tab-label{color:var(--oldglory);}
+
+  /* zip form */
+  .zip-form{
+    display:flex;
+    gap:8px;
+    margin-top:6px;
+    margin-bottom:18px;
+  }
+  .zip-input{
+    flex:1;
+    font-family:'Nunito',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    color:var(--ink);
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:14px;
+    padding:12px 14px;
+    outline:none;
+    min-width:0;
+  }
+  .zip-input:focus{border-color:var(--stblue);}
+  .zip-btn{
+    all:unset;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:#fff;
+    background:var(--oldglory);
+    box-shadow:0 4px 0 var(--oldglory-sh);
+    padding:12px 16px;
+    border-radius:14px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .zip-btn:active{transform:translateY(3px); box-shadow:none;}
+
+  .events-status{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+    min-height:20px;
+  }
+  .spinner{
+    width:16px; height:16px;
+    border-radius:50%;
+    border:3px solid var(--track);
+    border-top-color:var(--stblue);
+    animation:spin 0.8s linear infinite;
+    flex-shrink:0;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .events-status.error{color:var(--oldglory-sh);}
+  .events-status.success{color:var(--olive-sh);}
+
+  .event-card{
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:18px;
+    padding:14px 16px;
+    margin-bottom:10px;
+  }
+  .event-card-top{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .event-icon{
+    flex-shrink:0;
+    width:38px; height:38px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:17px;
+    color:#fff;
+  }
+  .event-info{min-width:0; flex:1;}
+  .event-name{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    color:var(--ink);
+    line-height:1.3;
+  }
+  .event-meta{
+    font-size:12px;
+    font-weight:700;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  .event-addr{
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--muted);
+    margin-top:3px;
+    line-height:1.4;
+  }
+  .event-dist{
+    flex-shrink:0;
+    font-family:'IBM Plex Mono', monospace, 'Nunito';
+    font-weight:700;
+    font-size:12.5px;
+    color:var(--ink);
+    background:#F3F1E9;
+    border-radius:10px;
+    padding:4px 8px;
+    white-space:nowrap;
+  }
+  .event-actions{
+    display:flex;
+    gap:8px;
+  }
+  .event-actions a{
+    flex:1;
+    text-align:center;
+    text-decoration:none;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    color:var(--ink);
+    background:#F3F1E9;
+    border-radius:10px;
+    padding:8px 6px;
+  }
+
+  .fallback-block{margin-top:8px;}
+  .link-row.wrap-row{
+    flex-wrap:wrap;
+    overflow-x:visible;
+  }
+
+  .tm-settings{
+    margin-bottom:16px;
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:14px;
+    padding:10px 14px;
+  }
+  .tm-settings summary{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:12.5px;
+    color:var(--stblue-sh);
+    cursor:pointer;
+  }
+  .tm-settings-body{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+  }
+  .tm-settings-note{
+    font-size:11px;
+    font-weight:600;
+    color:var(--muted);
+    margin-top:8px;
+    line-height:1.4;
+  }
+  .tm-settings-note a{color:var(--stblue-sh);}
+
+  .tm-section{margin-top:4px;}
+
+  /* mentor match */
+  .match-screen{margin-top:6px;}
+
+  .role-card{
+    all:unset;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:2px;
+    width:100%;
+    box-sizing:border-box;
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:18px;
+    padding:16px 18px;
+    margin-bottom:12px;
+    cursor:pointer;
+  }
+  .role-card:active{transform:translateY(2px);}
+  .role-icon{font-size:26px; margin-bottom:6px;}
+  .role-title{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:16px;
+    color:var(--ink);
+  }
+  .role-sub{
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .role-mentee{border-color:#BFD9EE;}
+  .role-mentor{border-color:#EAD0A8;}
+
+  .zip-input.full{
+    width:100%;
+    box-sizing:border-box;
+    margin-bottom:10px;
+  }
+  select.zip-input{
+    -webkit-appearance:none;
+    appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236B7280'><path d='M5.5 7.5l4.5 4.5 4.5-4.5'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+    background-size:16px;
+  }
+
+  .match-form-actions{
+    display:flex;
+    gap:8px;
+    margin-top:8px;
+  }
+  .match-form-actions .zip-btn{flex:1; text-align:center;}
+  .zip-btn.ghost{
+    background:var(--card);
+    color:var(--ink);
+    box-shadow:none;
+    border:2px solid var(--track);
+  }
+
+  .my-profile-card{
+    background:#F3F1E9;
+    border-radius:16px;
+    padding:14px 16px;
+    margin-bottom:18px;
+  }
+  .my-profile-top{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--ink);
+    margin-bottom:2px;
+  }
+  .my-profile-meta{
+    font-size:12px;
+    font-weight:700;
+    color:var(--muted);
+  }
+  .my-profile-actions{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+  }
+  .my-profile-actions button{
+    all:unset;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:11.5px;
+    color:var(--ink);
+    background:#fff;
+    border:2px solid var(--track);
+    border-radius:10px;
+    padding:6px 10px;
+    cursor:pointer;
+  }
+
+  .badge-row{display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;}
+  .badge{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:10.5px;
+    color:#fff;
+    padding:3px 9px;
+    border-radius:999px;
+  }
+  .badge.same-branch{background:var(--olive);}
+  .badge.branch{background:var(--navy);}
+  .badge.stage{background:var(--bronze);}
+
+  .match-privacy-note{margin-top:16px;}
+
+  .auth-card{
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:18px;
+    padding:18px;
+  }
+  .auth-copy{
+    font-size:13px;
+    font-weight:600;
+    color:var(--muted);
+    line-height:1.5;
+    margin:4px 0 14px;
+  }
+  .zip-btn.full-btn{
+    width:100%;
+    box-sizing:border-box;
+    text-align:center;
+    margin-bottom:10px;
+  }
+
+  .request-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    background:#FBF3E3;
+    border:2px solid #EDD8A8;
+    border-radius:14px;
+    padding:10px 14px;
+    margin-bottom:8px;
+  }
+  .request-row span:first-child{
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--ink);
+  }
+  .request-actions{display:flex; gap:6px;}
+  .request-actions button{
+    all:unset;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:11px;
+    padding:6px 10px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .request-actions button[data-action="accept"]{background:var(--olive); color:#fff;}
+  .request-actions button[data-action="decline"]{background:#fff; color:var(--muted); border:1.5px solid var(--track);}
+
+  .request-btn{
+    all:unset;
+    flex:1;
+    text-align:center;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    color:#fff;
+    background:var(--navy);
+    border-radius:10px;
+    padding:8px 6px;
+    cursor:pointer;
+  }
+  .muted-note{
+    flex:1;
+    text-align:center;
+    font-size:12px;
+    font-weight:700;
+    color:var(--muted);
+    padding:8px 6px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap tab-panel active" id="tab-path">
+  <div class="eyebrow">Your Transition Path</div>
+  <h1>Let's Get You Squared Away</h1>
+  <div class="sub">Tap a stop on the path. Each one's a quick card — what to handle now, and where to go.</div>
+
+  <div class="progress" id="progress">
+    <div class="progress-label" id="progressLabel">0 of 7 explored</div>
+  </div>
+
+  <div class="path-container" id="pathContainer">
+    <svg id="pathSvg" preserveAspectRatio="none"></svg>
+  </div>
+
+  <footer>
+    Informational reference only, not official guidance. Confirm current dates, windows, and eligibility with your installation's transition office or VA.gov before acting.
+  </footer>
+</div>
+
+<div class="wrap tab-panel" id="tab-events">
+  <div class="eyebrow">Near You</div>
+  <h1>Local Events &amp; Posts</h1>
+  <div class="sub">Enter your ZIP and we'll find veteran organizations within 50 miles, nearest first. Most host regular events — tap through for their current calendar.</div>
+
+  <form id="zipForm" class="zip-form" autocomplete="off">
+    <input type="text" id="zipInput" class="zip-input" placeholder="ZIP code" inputmode="numeric" maxlength="5" pattern="[0-9]{5}">
+    <button type="submit" class="zip-btn" id="zipBtn">Find Nearby</button>
+  </form>
+
+  <details class="tm-settings" id="tmSettings">
+    <summary>Optional: add a free events API key for ticketed events</summary>
+    <div class="tm-settings-body">
+      <input type="text" id="tmKeyInput" class="zip-input" placeholder="Ticketmaster API key">
+      <button type="button" class="zip-btn" id="tmKeySave">Save</button>
+    </div>
+    <div class="tm-settings-note">
+      Free at <a href="https://developer.ticketmaster.com/product/discovery-api/" target="_blank" rel="noopener">developer.ticketmaster.com</a>. Saved only on this device — never sent anywhere else.
+    </div>
+  </details>
+
+  <div id="eventsStatus" class="events-status"></div>
+  <div id="orgSection" class="tm-section" style="display:none;">
+    <div class="section-label">Veteran organizations near you</div>
+    <div id="eventsResults" class="events-results"></div>
+  </div>
+
+  <div id="tmSection" class="tm-section" style="display:none;">
+    <div class="section-label">Upcoming ticketed events</div>
+    <div id="tmResults" class="events-results"></div>
+  </div>
+
+  <div class="fallback-block" id="fallbackBlock">
+    <div class="section-label">More ways to search</div>
+    <div class="link-row wrap-row" id="fallbackLinks"></div>
+  </div>
+
+  <footer>
+    Locations are pulled from OpenStreetMap community data and may be incomplete or outdated. Ticketed event listings come from Ticketmaster where a key is provided. Always confirm hours and events directly with the organization before visiting.
+  </footer>
+</div>
+
+<div class="wrap tab-panel" id="tab-match">
+  <div class="eyebrow">Battle Buddy Match</div>
+  <h1>Find a Mentor — or Be One</h1>
+  <div class="sub">Matched by branch and where you are on the timeline. Mentors are veterans one year or further out who've been through it.</div>
+
+  <div id="matchLoading" class="events-status"><span class="spinner"></span><span>Loading…</span></div>
+
+  <!-- Screen 0: sign in -->
+  <div id="matchAuthGate" class="match-screen" style="display:none;">
+    <div class="auth-card">
+      <div class="section-label">Sign in to continue</div>
+      <p class="auth-copy">We use a one-time email link — no password to create or leak. You'll only need to do this once per device.</p>
+      <input type="email" id="authEmail" class="zip-input full" placeholder="you@example.com" autocomplete="email">
+      <button type="button" class="zip-btn full-btn" id="authSendLink">Send Magic Link</button>
+      <div id="authStatus" class="events-status"></div>
+    </div>
+  </div>
+
+  <!-- Screen 1: choose role -->
+  <div id="matchRoleSelect" class="match-screen" style="display:none;">
+    <button class="role-card role-mentee" id="chooseMentee">
+      <span class="role-icon">🧭</span>
+      <span class="role-title">I want a mentor</span>
+      <span class="role-sub">New to the timeline, have questions</span>
+    </button>
+    <button class="role-card role-mentor" id="chooseMentor">
+      <span class="role-icon">🎖️</span>
+      <span class="role-title">I want to mentor</span>
+      <span class="role-sub">1+ year out, willing to answer questions</span>
+    </button>
+  </div>
+
+  <!-- Screen 2: profile form -->
+  <div id="matchForm" class="match-screen" style="display:none;">
+    <div class="section-label" id="formRoleLabel">Your info</div>
+    <input type="text" id="matchName" class="zip-input full" placeholder="Nickname or first name" maxlength="30">
+    <select id="matchBranch" class="zip-input full"></select>
+    <select id="matchStage" class="zip-input full"></select>
+    <input type="text" id="matchContact" class="zip-input full" placeholder="Email or phone (optional)">
+    <div class="tm-settings-note" id="mentorEligNote" style="display:none;">
+      Mentors must be at least 1 year past separation — the stage list above only shows eligible options.
+    </div>
+    <div class="tm-settings-note">
+      Shown to other users of this app. Leave contact blank if you'd rather not share it — you can add it later.
+    </div>
+    <div class="match-form-actions">
+      <button type="button" class="zip-btn ghost" id="formBack">Back</button>
+      <button type="button" class="zip-btn" id="formSave">Save &amp; Find Matches</button>
+    </div>
+    <div id="formError" class="events-status error"></div>
+  </div>
+
+  <!-- Screen 3: results -->
+  <div id="matchResults" class="match-screen" style="display:none;">
+    <div class="my-profile-card" id="myProfileCard"></div>
+
+    <div class="section-label" id="matchesLabel">Your matches</div>
+    <div id="matchesStatus" class="events-status"></div>
+    <div id="matchesList" class="events-results"></div>
+  </div>
+
+  <div class="tm-settings-note match-privacy-note">
+    This is a lightweight directory, not a private messaging system — anything you enter here (including contact info) is visible to anyone using this app. Share only what you're comfortable with.
+  </div>
+</div>
+
+<nav class="tabbar" id="tabbar">
+  <button class="tab-btn active" data-tab="tab-path" id="tabBtnPath">
+    <span class="tab-icon">🗺️</span>
+    <span class="tab-label">Path</span>
+  </button>
+  <button class="tab-btn" data-tab="tab-events" id="tabBtnEvents">
+    <span class="tab-icon">📍</span>
+    <span class="tab-label">Events</span>
+  </button>
+  <button class="tab-btn" data-tab="tab-match" id="tabBtnMatch">
+    <span class="tab-icon">🤝</span>
+    <span class="tab-label">Match</span>
+  </button>
+</nav>
+
+<div class="backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-top" id="sheetTop">
+    <button class="sheet-close" id="sheetClose">✕</button>
+    <span class="sheet-icon" id="sheetIcon"></span>
+    <div class="sheet-t" id="sheetT"></div>
+    <div class="sheet-title" id="sheetTitle"></div>
+    <div class="sheet-blurb" id="sheetBlurb"></div>
+  </div>
+  <div class="sheet-body">
+    <div class="section-label must-label">Must do</div>
+    <div id="checklistMust"></div>
+    <div class="done-msg" id="doneMsg"></div>
+    <div class="section-label rec-label">Recommended</div>
+    <div id="checklistRec"></div>
+    <div class="section-label">Resources</div>
+    <div class="link-row" id="linkRow"></div>
+  </div>
+  <button class="got-it" id="gotIt">Got it!</button>
+</div>
+
+<script>
+const stops = [
+  { t:"T-60", title:"Final Systems Check", icon:"🧭", color:"var(--olive)", sh:"var(--olive-sh)",
+    blurb:"Two months out. Get paperwork moving before it gets expensive to fix.",
+    must:[
+      "Sign off Career Readiness Standards (TAP/GPS)",
+      "File your VA pre-discharge claim if you haven't",
+      "Request copies of medical & dental records",
+      "Confirm your separation date with your unit admin",
+      "Start gathering evidence for any VA disability claim"
+    ],
+    recommended:[
+      "Start your resume and LinkedIn",
+      "Research DoD SkillBridge if your command allows it",
+      "Look into SGLI life insurance and what happens at separation"
+    ],
+    links:[["VA pre-discharge claims","https://www.benefits.va.gov/predischarge/"],["SkillBridge","https://skillbridge.osd.mil/"],["TAP overview","https://www.dol.gov/agencies/vets/tap"]]
+  },
+  { t:"T-30", title:"Out-Processing Push", icon:"📋", color:"var(--khaki)", sh:"var(--khaki-sh)",
+    blurb:"One month out. Installation clearing eats your calendar — beat it to the punch.",
+    must:[
+      "Complete final medical & dental exams",
+      "Start your installation clearing checklist",
+      "Pre-enroll in VA health care",
+      "Confirm your out-processing appointments are scheduled",
+      "Verify your leave balance and terminal leave dates"
+    ],
+    recommended:[
+      "Apply to jobs — use veterans' preference on USAJobs",
+      "Set up a change-of-address and mail forwarding plan",
+      "Research VA home loan eligibility if you're buying"
+    ],
+    links:[["VA health care","https://www.va.gov/health-care/how-to-apply/"],["USAJobs veterans","https://www.usajobs.gov/Veterans"],["Moving & PCS","https://www.militaryonesource.mil/moving-housing/"]]
+  },
+  { t:"T-14", title:"Final Appointments", icon:"🎒", color:"var(--stblue)", sh:"var(--stblue-sh)",
+    blurb:"Two weeks out. Close every loop — nothing's easier to fix once you're gone.",
+    must:[
+      "Verify your DD214 will be accurate",
+      "Turn in gear and uniforms",
+      "Confirm final pay and travel voucher",
+      "Create your VA.gov account",
+      "Get final copies of records before you clear the base"
+    ],
+    recommended:[
+      "Line up your first 30/60/90-day civilian plan",
+      "Research state veteran benefits where you're moving",
+      "Plan your move logistics (POV shipment, household goods)"
+    ],
+    links:[["VA.gov sign-in","https://www.va.gov/sign-in/"],["Get your DD214","https://www.va.gov/records/get-military-service-records/"]]
+  },
+  { t:"T-0", title:"Separation Day", icon:"🎖️", color:"var(--oldglory)", sh:"var(--oldglory-sh)", big:true,
+    blurb:"This is the line. What you activate now decides how fast benefits kick in.",
+    must:[
+      "Check your DD214 line by line",
+      "Activate VA health care",
+      "Know your SGLI → VGLI window (~120 days free)",
+      "Apply for your Veteran ID card",
+      "Register with your state's veterans affairs office"
+    ],
+    recommended:[
+      "Look into UCX unemployment if you don't have a job yet",
+      "Update your address and beneficiaries everywhere",
+      "Store DD214 copies somewhere safe, physical and digital"
+    ],
+    links:[["VGLI conversion","https://www.va.gov/life-insurance/options-eligibility/vgli/"],["Veteran ID card","https://www.va.gov/records/get-veteran-id-cards/"],["UCX unemployment","https://www.dol.gov/agencies/vets/programs/ucx"]]
+  },
+  { t:"6 MO", title:"First Reassessment", icon:"🌱", color:"var(--navy)", sh:"var(--navy-sh)",
+    blurb:"Six months in. The adrenaline's worn off — check what's actually working.",
+    must:[
+      "Follow up on your VA claim status",
+      "Confirm your GI Bill enrollment is processing",
+      "Check in with a Vet Center",
+      "Review your budget after a full pay cycle",
+      "Confirm you've been seen at least once under VA health care"
+    ],
+    recommended:[
+      "Reassess whether your job is the right fit",
+      "Look into VR&E if you have a service-connected condition",
+      "Connect with a local VSO chapter"
+    ],
+    links:[["Vet Centers","https://www.vetcenter.va.gov/"],["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"],["GI Bill","https://www.va.gov/education/about-gi-bill-benefits/"]]
+  },
+  { t:"1 YR", title:"One Year Mark", icon:"🛡️", color:"var(--bronze)", sh:"var(--bronze-sh)",
+    blurb:"A full year out. A few deadlines quietly expire — worth a deliberate check.",
+    must:[
+      "Verify your VGLI conversion deadline",
+      "Review options if your claim was denied or under-rated",
+      "Reassess whether your career path still fits",
+      "Check your GI Bill usage if you're in school",
+      "Confirm a VSO or advocate is in your corner"
+    ],
+    recommended:[
+      "Look into Veterans Business Outreach Centers",
+      "Do an honest mental health check-in with yourself",
+      "Review your long-term financial plan"
+    ],
+    links:[["VA decision reviews","https://www.va.gov/decision-reviews/"],["Veterans Business Outreach Centers","https://www.sba.gov/local-assistance/resource-partners/veterans-business-outreach-center-vboc-program"]]
+  },
+  { t:"2+ YR", title:"Long-Term Standing", icon:"🏆", color:"var(--gold)", sh:"var(--gold-sh)", big:true,
+    blurb:"Two years and beyond. Now it's maintenance and growth, not urgency.",
+    must:[
+      "File a claim increase if a condition's worsened",
+      "Track your GI Bill's 36-month clock",
+      "Stay current on any VA re-examination schedules",
+      "Review your VA disability rating periodically",
+      "Keep VA.gov contact info and direct deposit current"
+    ],
+    recommended:[
+      "Mentor someone earlier in their transition",
+      "Build or update your long-term financial plan",
+      "Deepen involvement in a VSO or veteran community"
+    ],
+    links:[["File a claim increase","https://www.va.gov/disability/how-to-file-claim/"],["GI Bill comparison tool","https://www.va.gov/education/gi-bill-comparison-tool/"]]
+  }
+];
+
+const xPercents = [15, 68, 25, 50, 72, 20, 50];
+const yStep = 132;
+const yStart = 46;
+
+const container = document.getElementById('pathContainer');
+const svg = document.getElementById('pathSvg');
+const totalHeight = yStart + (stops.length - 1) * yStep + 70;
+container.style.height = totalHeight + 'px';
+svg.setAttribute('viewBox', `0 0 100 ${totalHeight}`);
+
+const points = stops.map((s, i) => ({ x: xPercents[i], y: yStart + i * yStep }));
+
+let pathD = `M ${points[0].x} ${points[0].y}`;
+for (let i = 1; i < points.length; i++) {
+  pathD += ` L ${points[i].x} ${points[i].y}`;
+}
+const pathEl = document.createElementNS('http://www.w3.org/2000/svg','path');
+pathEl.setAttribute('d', pathD);
+pathEl.setAttribute('fill', 'none');
+pathEl.setAttribute('stroke', '#E4DFEE');
+pathEl.setAttribute('stroke-width', '5');
+pathEl.setAttribute('stroke-linecap', 'round');
+pathEl.setAttribute('stroke-linejoin', 'round');
+pathEl.setAttribute('stroke-dasharray', '1 11');
+pathEl.setAttribute('vector-effect', 'non-scaling-stroke');
+svg.appendChild(pathEl);
+
+const STORAGE_KEY = 'veteran-path-progress-v1';
+const visited = new Set();
+const checkedState = stops.map(s => ({
+  must: s.must.map(() => false),
+  recommended: s.recommended.map(() => false)
+}));
+
+function addVisitedBadge(idx){
+  const badgeHost = document.getElementById(`nodebtn-${idx}`);
+  if (badgeHost && !badgeHost.querySelector('.node-badge')) {
+    const badge = document.createElement('span');
+    badge.className = 'node-badge';
+    badge.textContent = '✓';
+    badgeHost.appendChild(badge);
+  }
+}
+
+async function saveProgress(){
+  try {
+    await window.storage.set(STORAGE_KEY, JSON.stringify({
+      visited: Array.from(visited),
+      checked: checkedState
+    }), false);
+  } catch (err) {
+    console.error('Could not save progress', err);
+  }
+}
+
+async function loadProgress(){
+  try {
+    const result = await window.storage.get(STORAGE_KEY, false);
+    if (!result) return;
+    const data = JSON.parse(result.value);
+    (data.visited || []).forEach(idx => {
+      visited.add(idx);
+      addVisitedBadge(idx);
+    });
+    if (Array.isArray(data.checked)) {
+      data.checked.forEach((row, idx) => {
+        if (!row || !checkedState[idx]) return;
+        if (Array.isArray(row.must)) {
+          row.must.forEach((val, ci) => {
+            if (typeof val === 'boolean' && ci < checkedState[idx].must.length) {
+              checkedState[idx].must[ci] = val;
+            }
+          });
+        }
+        if (Array.isArray(row.recommended)) {
+          row.recommended.forEach((val, ci) => {
+            if (typeof val === 'boolean' && ci < checkedState[idx].recommended.length) {
+              checkedState[idx].recommended[ci] = val;
+            }
+          });
+        }
+      });
+    }
+    updateProgress();
+  } catch (err) {
+    // No saved progress yet — start fresh
+  }
+}
+
+stops.forEach((s, i) => {
+  const wrap = document.createElement('div');
+  wrap.className = 'node-wrap';
+  wrap.style.left = points[i].x + '%';
+  wrap.style.top = points[i].y + 'px';
+
+  wrap.innerHTML = `
+    <button class="node-btn ${s.big ? 'big' : ''}" id="nodebtn-${i}" data-idx="${i}"
+      style="background:${s.color}; box-shadow:0 5px 0 ${s.sh}; color:${s.color};">
+      ${s.icon}
+    </button>
+    <div class="node-label">
+      <div class="node-t">${s.t}</div>
+      <div class="node-title">${s.title}</div>
+    </div>
+  `;
+  container.appendChild(wrap);
+
+  if (s.big) {
+    document.getElementById(`nodebtn-${i}`).classList.add('node-pulse');
+  }
+});
+
+function updateProgress(){
+  const label = document.getElementById('progressLabel');
+  const prog = document.getElementById('progress');
+  label.textContent = `${visited.size} of ${stops.length} explored`;
+  document.querySelectorAll('.pip').forEach(p => p.remove());
+  stops.forEach((s,i) => {
+    const pip = document.createElement('div');
+    pip.className = 'pip' + (visited.has(i) ? ' on' : '');
+    if (visited.has(i)) pip.style.background = getComputedStyle(document.documentElement).getPropertyValue(s.color.replace('var(','').replace(')','')) || s.color;
+    prog.insertBefore(pip, label);
+  });
+}
+updateProgress();
+loadProgress();
+
+const backdrop = document.getElementById('backdrop');
+const sheet = document.getElementById('sheet');
+const sheetTop = document.getElementById('sheetTop');
+const sheetIcon = document.getElementById('sheetIcon');
+const sheetT = document.getElementById('sheetT');
+const sheetTitle = document.getElementById('sheetTitle');
+const sheetBlurb = document.getElementById('sheetBlurb');
+const checklistMustEl = document.getElementById('checklistMust');
+const checklistRecEl = document.getElementById('checklistRec');
+const linkRow = document.getElementById('linkRow');
+const doneMsg = document.getElementById('doneMsg');
+const gotIt = document.getElementById('gotIt');
+
+let currentIdx = null;
+
+function buildChip(idx, kind, ci, item){
+  const chip = document.createElement('button');
+  const isChecked = checkedState[idx][kind][ci];
+  chip.className = 'chip' + (kind === 'recommended' ? ' recommended' : '') + (isChecked ? ' checked' : '');
+  chip.innerHTML = `<span class="box">${isChecked ? '✓' : ''}</span><span class="txt">${item}</span>`;
+  chip.addEventListener('click', () => {
+    checkedState[idx][kind][ci] = !checkedState[idx][kind][ci];
+    renderChecklist(idx);
+    saveProgress();
+  });
+  return chip;
+}
+
+function renderChecklist(idx){
+  const s = stops[idx];
+  checklistMustEl.innerHTML = '';
+  checklistRecEl.innerHTML = '';
+  s.must.forEach((item, ci) => checklistMustEl.appendChild(buildChip(idx, 'must', ci, item)));
+  s.recommended.forEach((item, ci) => checklistRecEl.appendChild(buildChip(idx, 'recommended', ci, item)));
+
+  const mustDone = checkedState[idx].must.every(Boolean);
+  const recDone = checkedState[idx].recommended.every(Boolean);
+  if (mustDone && recDone) {
+    doneMsg.textContent = '🌟 Every item done — squared away.';
+    doneMsg.classList.add('show');
+  } else if (mustDone) {
+    doneMsg.textContent = '✅ Must-dos handled. Nice work.';
+    doneMsg.classList.add('show');
+  } else {
+    doneMsg.classList.remove('show');
+  }
+}
+
+function openSheet(idx){
+  currentIdx = idx;
+  const s = stops[idx];
+  sheetTop.style.background = s.color;
+  sheetIcon.textContent = s.icon;
+  sheetT.textContent = s.t;
+  sheetTitle.textContent = s.title;
+  sheetBlurb.textContent = s.blurb;
+  renderChecklist(idx);
+  linkRow.innerHTML = '';
+  s.links.forEach(([label, url]) => {
+    const a = document.createElement('a');
+    a.className = 'link-pill';
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.style.background = s.sh;
+    a.textContent = label;
+    linkRow.appendChild(a);
+  });
+  gotIt.style.background = s.color;
+  gotIt.style.boxShadow = `0 5px 0 ${s.sh}`;
+
+  visited.add(idx);
+  addVisitedBadge(idx);
+  updateProgress();
+  saveProgress();
+
+  backdrop.classList.add('show');
+  sheet.classList.add('show');
+}
+
+function closeSheet(){
+  backdrop.classList.remove('show');
+  sheet.classList.remove('show');
+}
+
+container.addEventListener('click', (e) => {
+  const btn = e.target.closest('.node-btn');
+  if (!btn) return;
+  openSheet(parseInt(btn.getAttribute('data-idx')));
+});
+
+backdrop.addEventListener('click', closeSheet);
+document.getElementById('sheetClose').addEventListener('click', closeSheet);
+gotIt.addEventListener('click', closeSheet);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+
+/* ---------------- Tabs ---------------- */
+
+const tabButtons = document.querySelectorAll('.tab-btn');
+let eventsTabInitialized = false;
+let matchTabInitialized = false;
+
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.getAttribute('data-tab');
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(target).classList.add('active');
+    tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+    window.scrollTo(0, 0);
+    if (target === 'tab-events' && !eventsTabInitialized) {
+      eventsTabInitialized = true;
+      initEventsTab();
+    }
+    if (target === 'tab-match' && !matchTabInitialized) {
+      matchTabInitialized = true;
+      initMatchTab();
+    }
+  });
+});
+
+/* ---------------- Local Events & Posts ---------------- */
+
+const ORG_TYPES = [
+  { key: 'vfw', label: 'VFW Post', icon: '🎖️', color: 'var(--oldglory)', regex: /\b(VFW|Veterans of Foreign Wars)\b/i },
+  { key: 'legion', label: 'American Legion', icon: '⭐', color: 'var(--stblue)', regex: /American Legion/i },
+  { key: 'dav', label: 'DAV Chapter', icon: '🛡️', color: 'var(--bronze)', regex: /\b(DAV|Disabled American Veterans)\b/i },
+  { key: 'vetcenter', label: 'Vet Center', icon: '🌱', color: 'var(--olive)', regex: /Vet Center/i },
+  { key: 'va', label: 'VA Facility', icon: '🏥', color: 'var(--navy)', regex: /(VA Medical Center|Veterans Affairs|VA Clinic|VA Hospital)/i }
+];
+
+function classifyOrg(name) {
+  for (const t of ORG_TYPES) {
+    if (t.regex.test(name)) return t;
+  }
+  return ORG_TYPES[0];
+}
+
+function haversineMiles(lat1, lon1, lat2, lon2) {
+  const R = 3958.8;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+async function geocodeZip(zip) {
+  const res = await fetch(`https://api.zippopotam.us/us/${zip}`);
+  if (!res.ok) throw new Error('ZIP not found');
+  const data = await res.json();
+  const place = data.places && data.places[0];
+  if (!place) throw new Error('ZIP not found');
+  return {
+    city: place['place name'],
+    state: place['state abbreviation'],
+    lat: parseFloat(place['latitude']),
+    lon: parseFloat(place['longitude'])
+  };
+}
+
+async function fetchNearbyOrgs(lat, lon) {
+  const radiusMeters = 80500; // ~50 miles
+  const query = `
+[out:json][timeout:25];
+(
+  node["name"~"VFW|Veterans of Foreign Wars",i](around:${radiusMeters},${lat},${lon});
+  node["name"~"American Legion",i](around:${radiusMeters},${lat},${lon});
+  node["name"~"Disabled American Veterans|DAV",i](around:${radiusMeters},${lat},${lon});
+  node["name"~"Vet Center",i](around:${radiusMeters},${lat},${lon});
+  node["name"~"VA Medical Center|Veterans Affairs|VA Clinic",i](around:${radiusMeters},${lat},${lon});
+  way["name"~"VFW|American Legion|Disabled American Veterans|Vet Center|Veterans Affairs",i](around:${radiusMeters},${lat},${lon});
+);
+out center tags;
+`;
+  const res = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    body: 'data=' + encodeURIComponent(query)
+  });
+  if (!res.ok) throw new Error('Lookup failed');
+  const data = await res.json();
+  return data.elements || [];
+}
+
+function formatAddress(tags) {
+  if (!tags) return '';
+  const parts = [
+    [tags['addr:housenumber'], tags['addr:street']].filter(Boolean).join(' '),
+    tags['addr:city'],
+    tags['addr:state']
+  ].filter(Boolean);
+  return parts.join(', ');
+}
+
+function buildFallbackLinks(zip, city, state) {
+  const cityState = city && state ? `${city}, ${state}` : zip;
+  const eventbriteSlug = city && state
+    ? `${state.toLowerCase()}--${city.toLowerCase().replace(/\s+/g, '-')}`
+    : 'united-states';
+  return [
+    ['VA National Events', 'https://www.va.gov/outreach-and-events/events/'],
+    ['Search Eventbrite', `https://www.eventbrite.com/d/${eventbriteSlug}/veteran/`],
+    ['Find a VFW Post', 'https://www.vfw.org/find-a-post'],
+    ['Find an American Legion Post', 'https://www.legion.org/posts/find'],
+    ['Find a DAV Chapter', 'https://www.dav.org/veterans/find-a-local-office/']
+  ];
+}
+
+function renderFallbackLinks(zip, city, state) {
+  const row = document.getElementById('fallbackLinks');
+  row.innerHTML = '';
+  buildFallbackLinks(zip, city, state).forEach(([label, url]) => {
+    const a = document.createElement('a');
+    a.className = 'link-pill';
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.style.background = 'var(--navy)';
+    a.textContent = label;
+    row.appendChild(a);
+  });
+}
+
+function setEventsStatus(text, kind) {
+  const el = document.getElementById('eventsStatus');
+  el.className = 'events-status' + (kind ? ' ' + kind : '');
+  el.innerHTML = kind === 'loading'
+    ? `<span class="spinner"></span><span>${text}</span>`
+    : text;
+}
+
+async function runZipSearch(zip) {
+  const resultsEl = document.getElementById('eventsResults');
+  resultsEl.innerHTML = '';
+  document.getElementById('fallbackBlock').style.display = 'none';
+  document.getElementById('orgSection').style.display = 'none';
+  document.getElementById('tmSection').style.display = 'none';
+
+  if (!/^\d{5}$/.test(zip)) {
+    setEventsStatus('Enter a valid 5-digit ZIP code.', 'error');
+    return;
+  }
+
+  setEventsStatus('Looking up that ZIP code…', 'loading');
+
+  let loc;
+  try {
+    loc = await geocodeZip(zip);
+  } catch (err) {
+    setEventsStatus("Couldn't find that ZIP code. Try the search links below.", 'error');
+    document.getElementById('fallbackBlock').style.display = 'block';
+    renderFallbackLinks(zip, null, null);
+    return;
+  }
+
+  saveLastZip(zip);
+  setEventsStatus(`Searching within 50 miles of ${loc.city}, ${loc.state}…`, 'loading');
+
+  let elements;
+  try {
+    elements = await fetchNearbyOrgs(loc.lat, loc.lon);
+  } catch (err) {
+    setEventsStatus("Couldn't reach the location lookup right now. Try the search links below.", 'error');
+    document.getElementById('fallbackBlock').style.display = 'block';
+    renderFallbackLinks(zip, loc.city, loc.state);
+    return;
+  }
+
+  const seen = new Set();
+  const results = [];
+  elements.forEach(el => {
+    const name = el.tags && el.tags.name;
+    if (!name) return;
+    const elLat = el.lat ?? (el.center && el.center.lat);
+    const elLon = el.lon ?? (el.center && el.center.lon);
+    if (elLat == null || elLon == null) return;
+    const dupeKey = name.toLowerCase() + '|' + elLat.toFixed(2) + '|' + elLon.toFixed(2);
+    if (seen.has(dupeKey)) return;
+    seen.add(dupeKey);
+    const distance = haversineMiles(loc.lat, loc.lon, elLat, elLon);
+    if (distance > 50) return;
+    results.push({
+      name,
+      distance,
+      lat: elLat,
+      lon: elLon,
+      address: formatAddress(el.tags),
+      website: el.tags.website || el.tags['contact:website'] || null,
+      type: classifyOrg(name)
+    });
+  });
+
+  results.sort((a, b) => a.distance - b.distance);
+
+  document.getElementById('fallbackBlock').style.display = 'block';
+  renderFallbackLinks(zip, loc.city, loc.state);
+
+  if (results.length === 0) {
+    setEventsStatus(`No listed veteran posts found within 50 miles of ${loc.city}, ${loc.state}. Try the search links below.`, 'error');
+  } else {
+    setEventsStatus(`${results.length} found within 50 miles of ${loc.city}, ${loc.state} — nearest first.`, 'success');
+    document.getElementById('orgSection').style.display = 'block';
+    renderEventResults(results);
+  }
+
+  runTicketmasterSearch(zip);
+}
+
+function renderEventResults(results) {
+  const resultsEl = document.getElementById('eventsResults');
+  resultsEl.innerHTML = '';
+  results.forEach(r => {
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    const eventsSearchUrl = 'https://www.google.com/search?q=' + encodeURIComponent(r.name + ' events');
+    const directionsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(r.lat + ',' + r.lon);
+    const website = r.website ? (r.website.startsWith('http') ? r.website : 'https://' + r.website) : null;
+
+    card.innerHTML = `
+      <div class="event-card-top">
+        <div class="event-icon" style="background:${r.type.color}">${r.type.icon}</div>
+        <div class="event-info">
+          <div class="event-name">${r.name}</div>
+          <div class="event-meta">${r.type.label}</div>
+          ${r.address ? `<div class="event-addr">${r.address}</div>` : ''}
+        </div>
+        <div class="event-dist">${r.distance.toFixed(1)} mi</div>
+      </div>
+      <div class="event-actions">
+        <a href="${directionsUrl}" target="_blank" rel="noopener">Directions</a>
+        <a href="${website || eventsSearchUrl}" target="_blank" rel="noopener">${website ? 'Website' : 'See events'}</a>
+      </div>
+    `;
+    resultsEl.appendChild(card);
+  });
+}
+
+const ZIP_STORAGE_KEY = 'veteran-path-lastzip';
+
+async function saveLastZip(zip) {
+  try {
+    await window.storage.set(ZIP_STORAGE_KEY, zip, false);
+  } catch (err) {
+    console.error('Could not save ZIP', err);
+  }
+}
+
+async function loadLastZip() {
+  try {
+    const result = await window.storage.get(ZIP_STORAGE_KEY, false);
+    return result ? result.value : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+function initEventsTab() {
+  const form = document.getElementById('zipForm');
+  const input = document.getElementById('zipInput');
+  const tmInput = document.getElementById('tmKeyInput');
+  const tmSaveBtn = document.getElementById('tmKeySave');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    runZipSearch(input.value.trim());
+  });
+
+  tmSaveBtn.addEventListener('click', async () => {
+    const key = tmInput.value.trim();
+    await saveTmKey(key);
+    tmSaveBtn.textContent = 'Saved';
+    setTimeout(() => { tmSaveBtn.textContent = 'Save'; }, 1200);
+    const zip = input.value.trim();
+    if (key && /^\d{5}$/.test(zip)) runTicketmasterSearch(zip);
+  });
+
+  loadTmKey().then(key => { if (key) tmInput.value = key; });
+
+  loadLastZip().then(zip => {
+    if (zip) {
+      input.value = zip;
+      renderFallbackLinks(zip, null, null);
+      document.getElementById('fallbackBlock').style.display = 'block';
+      runZipSearch(zip);
+    } else {
+      renderFallbackLinks('', null, null);
+      document.getElementById('fallbackBlock').style.display = 'block';
+    }
+  });
+}
+
+/* ---------------- Ticketmaster (optional, user-supplied key) ---------------- */
+
+const TM_KEY_STORAGE = 'veteran-path-tm-key';
+
+async function saveTmKey(key) {
+  try {
+    await window.storage.set(TM_KEY_STORAGE, key, false);
+  } catch (err) {
+    console.error('Could not save Ticketmaster key', err);
+  }
+}
+
+async function loadTmKey() {
+  try {
+    const result = await window.storage.get(TM_KEY_STORAGE, false);
+    return result ? result.value : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+async function runTicketmasterSearch(zip) {
+  const key = await loadTmKey();
+  const tmSection = document.getElementById('tmSection');
+  const tmResults = document.getElementById('tmResults');
+  tmResults.innerHTML = '';
+  if (!key) { tmSection.style.display = 'none'; return; }
+
+  const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${encodeURIComponent(key)}&postalCode=${zip}&radius=50&unit=miles&keyword=veteran&sort=distance,asc&size=20`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Ticketmaster request failed');
+    const data = await res.json();
+    const events = (data._embedded && data._embedded.events) || [];
+    if (events.length === 0) {
+      tmSection.style.display = 'block';
+      tmResults.innerHTML = '<div class="events-status">No ticketed events matching "veteran" found within 50 miles right now.</div>';
+      return;
+    }
+    tmSection.style.display = 'block';
+    renderTicketmasterEvents(events);
+  } catch (err) {
+    tmSection.style.display = 'block';
+    tmResults.innerHTML = '<div class="events-status error">Couldn\'t reach Ticketmaster — check your API key.</div>';
+  }
+}
+
+function renderTicketmasterEvents(events) {
+  const tmResults = document.getElementById('tmResults');
+  tmResults.innerHTML = '';
+  events.forEach(ev => {
+    const venue = ev._embedded && ev._embedded.venues && ev._embedded.venues[0];
+    const dateStr = ev.dates && ev.dates.start && ev.dates.start.localDate;
+    const timeStr = ev.dates && ev.dates.start && ev.dates.start.localTime;
+    const when = [dateStr, timeStr].filter(Boolean).join(' at ');
+    const venueName = venue ? venue.name : '';
+    const cityState = venue && venue.city ? `${venue.city.name}${venue.state ? ', ' + venue.state.stateCode : ''}` : '';
+    const distance = ev.distance != null ? `${Math.round(ev.distance)} mi` : '';
+
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    card.innerHTML = `
+      <div class="event-card-top">
+        <div class="event-icon" style="background:var(--stblue)">🎟️</div>
+        <div class="event-info">
+          <div class="event-name">${ev.name}</div>
+          <div class="event-meta">${when || 'Date TBD'}</div>
+          ${venueName ? `<div class="event-addr">${venueName}${cityState ? ' · ' + cityState : ''}</div>` : ''}
+        </div>
+        ${distance ? `<div class="event-dist">${distance}</div>` : ''}
+      </div>
+      <div class="event-actions">
+        <a href="${ev.url}" target="_blank" rel="noopener">View & get tickets</a>
+      </div>
+    `;
+    tmResults.appendChild(card);
+  });
+}
+
+/* ---------------- Mentor / Mentee Match (Supabase-backed) ---------------- */
+
+const SUPABASE_URL = 'https://kbyyqayedkfbqzvqtget.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_nipXFJhW69UONKCcrVuNxQ_mXLchbc9'; // publishable key — safe to expose client-side
+
+const sb = (SUPABASE_URL.startsWith('http') && window.supabase)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+const BRANCHES = ['Army', 'Navy', 'Air Force', 'Marine Corps', 'Space Force', 'Coast Guard'];
+const ALL_STAGE_CODES = stops.map(s => s.t); // ["T-60","T-30","T-14","T-0","6 MO","1 YR","2+ YR"]
+const MENTOR_ELIGIBLE_STAGES = ['1 YR', '2+ YR'];
+
+let myId = null;
+let myProfile = null;
+let pendingRole = null;
+let allConnections = [];
+
+function stageLabel(code) {
+  const stop = stops.find(s => s.t === code);
+  return stop ? `${code} · ${stop.title}` : code;
+}
+
+function populateBranchSelect(select) {
+  select.innerHTML = '<option value="" disabled selected>Branch of service</option>' +
+    BRANCHES.map(b => `<option value="${b}">${b}</option>`).join('');
+}
+
+function populateStageSelect(select, role) {
+  const codes = role === 'mentor' ? MENTOR_ELIGIBLE_STAGES : ALL_STAGE_CODES;
+  select.innerHTML = '<option value="" disabled selected>Where are you on the timeline?</option>' +
+    codes.map(c => `<option value="${c}">${stageLabel(c)}</option>`).join('');
+}
+
+function showMatchScreen(name) {
+  document.getElementById('matchLoading').style.display = 'none';
+  ['matchAuthGate', 'matchRoleSelect', 'matchForm', 'matchResults'].forEach(id => {
+    document.getElementById(id).style.display = id === name ? 'block' : 'none';
+  });
+}
+
+async function initMatchTab() {
+  if (!sb) {
+    showMatchScreen('matchAuthGate');
+    document.getElementById('authStatus').textContent = 'Backend not connected yet — add your Supabase URL and key in the app code.';
+    return;
+  }
+
+  document.getElementById('authSendLink').addEventListener('click', handleSendMagicLink);
+  document.getElementById('chooseMentee').addEventListener('click', () => openForm('mentee'));
+  document.getElementById('chooseMentor').addEventListener('click', () => openForm('mentor'));
+  document.getElementById('formBack').addEventListener('click', () => showMatchScreen(myProfile ? 'matchResults' : 'matchRoleSelect'));
+  document.getElementById('formSave').addEventListener('click', handleSaveProfile);
+
+  populateBranchSelect(document.getElementById('matchBranch'));
+
+  sb.auth.onAuthStateChange((_event, session) => handleSession(session));
+
+  const { data: { session } } = await sb.auth.getSession();
+  handleSession(session);
+}
+
+async function handleSendMagicLink() {
+  const email = document.getElementById('authEmail').value.trim();
+  const statusEl = document.getElementById('authStatus');
+  if (!email || !email.includes('@')) {
+    statusEl.className = 'events-status error';
+    statusEl.textContent = 'Enter a valid email address.';
+    return;
+  }
+  statusEl.className = 'events-status';
+  statusEl.innerHTML = '<span class="spinner"></span><span>Sending link…</span>';
+
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.href }
+  });
+
+  if (error) {
+    statusEl.className = 'events-status error';
+    statusEl.textContent = error.message;
+  } else {
+    statusEl.className = 'events-status success';
+    statusEl.textContent = `Check ${email} for a sign-in link, then come back here.`;
+  }
+}
+
+async function handleSession(session) {
+  if (!session) {
+    myId = null;
+    myProfile = null;
+    showMatchScreen('matchAuthGate');
+    return;
+  }
+  myId = session.user.id;
+  myProfile = await getMyProfile();
+  if (myProfile) {
+    renderResultsScreen();
+  } else {
+    showMatchScreen('matchRoleSelect');
+  }
+}
+
+async function getMyProfile() {
+  const { data, error } = await sb.from('profiles').select('*').eq('id', myId).maybeSingle();
+  if (error) { console.error(error); return null; }
+  return data;
+}
+
+function openForm(role) {
+  pendingRole = role;
+  document.getElementById('formRoleLabel').textContent = role === 'mentor' ? 'Your mentor profile' : 'Your mentee profile';
+  document.getElementById('mentorEligNote').style.display = role === 'mentor' ? 'block' : 'none';
+  populateStageSelect(document.getElementById('matchStage'), role);
+  document.getElementById('matchName').value = myProfile ? myProfile.name : '';
+  document.getElementById('matchContact').value = myProfile ? (myProfile.contact || '') : '';
+  document.getElementById('matchBranch').value = myProfile ? myProfile.branch : '';
+  document.getElementById('formError').textContent = '';
+  showMatchScreen('matchForm');
+}
+
+async function handleSaveProfile() {
+  const name = document.getElementById('matchName').value.trim();
+  const branch = document.getElementById('matchBranch').value;
+  const stage = document.getElementById('matchStage').value;
+  const contact = document.getElementById('matchContact').value.trim();
+  const errEl = document.getElementById('formError');
+
+  if (!name || !branch || !stage) {
+    errEl.textContent = 'Fill in a nickname, branch, and stage to continue.';
+    return;
+  }
+  if (pendingRole === 'mentor' && !MENTOR_ELIGIBLE_STAGES.includes(stage)) {
+    errEl.textContent = 'Mentors need to be at least 1 year past separation.';
+    return;
+  }
+  errEl.textContent = '';
+
+  const { data, error } = await sb.from('profiles')
+    .upsert({ id: myId, name, branch, stage, role: pendingRole, contact })
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    errEl.textContent = "Couldn't save your profile — try again in a moment.";
+    return;
+  }
+  myProfile = data;
+  renderResultsScreen();
+}
+
+async function renderResultsScreen() {
+  showMatchScreen('matchResults');
+  renderMyProfileCard();
+
+  const { data: conns } = await sb.from('connections')
+    .select('*')
+    .or(`requester_id.eq.${myId},recipient_id.eq.${myId}`);
+  allConnections = conns || [];
+  renderIncomingRequests();
+
+  const wantRole = myProfile.role === 'mentee' ? 'mentor' : 'mentee';
+  const statusEl = document.getElementById('matchesStatus');
+  const listEl = document.getElementById('matchesList');
+  document.getElementById('matchesLabel').textContent = myProfile.role === 'mentee' ? 'Mentors for you' : 'Mentees looking for a mentor';
+  listEl.innerHTML = '';
+  statusEl.className = 'events-status';
+  statusEl.innerHTML = '<span class="spinner"></span><span>Finding matches…</span>';
+
+  const { data: matches, error } = await sb.rpc('get_matches', { want_role: wantRole });
+  if (error) {
+    statusEl.className = 'events-status error';
+    statusEl.textContent = "Couldn't load matches right now.";
+    return;
+  }
+
+  const sorted = (matches || []).slice().sort((a, b) => {
+    const aSame = a.branch === myProfile.branch ? 0 : 1;
+    const bSame = b.branch === myProfile.branch ? 0 : 1;
+    return aSame - bSame;
+  });
+
+  if (sorted.length === 0) {
+    statusEl.textContent = wantRole === 'mentor'
+      ? 'No mentors listed yet. Check back soon.'
+      : 'No mentees looking for a mentor right now.';
+    return;
+  }
+
+  statusEl.textContent = `${sorted.length} ${wantRole}${sorted.length === 1 ? '' : 's'} found.`;
+  sorted.forEach(m => listEl.appendChild(buildMatchCard(m)));
+}
+
+function connectionWith(otherId) {
+  return allConnections.find(c =>
+    (c.requester_id === myId && c.recipient_id === otherId) ||
+    (c.recipient_id === myId && c.requester_id === otherId)
+  );
+}
+
+function buildMatchCard(m) {
+  const card = document.createElement('div');
+  card.className = 'event-card';
+  const sameBranch = m.branch === myProfile.branch;
+  const conn = connectionWith(m.id);
+
+  let actionHtml;
+  if (conn && conn.status === 'accepted') {
+    actionHtml = `<span class="contact-loading">Loading contact…</span>`;
+  } else if (conn && conn.status === 'pending' && conn.requester_id === myId) {
+    actionHtml = `<span class="muted-note">Request sent</span>`;
+  } else if (conn && conn.status === 'pending' && conn.recipient_id === myId) {
+    actionHtml = `<span class="muted-note">Check requests above</span>`;
+  } else if (conn && conn.status === 'declined') {
+    actionHtml = `<span class="muted-note">Not connected</span>`;
+  } else {
+    actionHtml = `<button class="request-btn">Request contact info</button>`;
+  }
+
+  card.innerHTML = `
+    <div class="event-card-top">
+      <div class="event-icon" style="background:${m.role === 'mentor' ? 'var(--oldglory)' : 'var(--stblue)'}">${m.role === 'mentor' ? '🎖️' : '🧭'}</div>
+      <div class="event-info">
+        <div class="event-name">${m.name}</div>
+        <div class="badge-row">
+          ${sameBranch ? '<span class="badge same-branch">Same branch</span>' : `<span class="badge branch">${m.branch}</span>`}
+          <span class="badge stage">${m.stage}</span>
+        </div>
+      </div>
+    </div>
+    <div class="event-actions">${actionHtml}</div>
+  `;
+
+  const reqBtn = card.querySelector('.request-btn');
+  if (reqBtn) reqBtn.addEventListener('click', () => sendConnectionRequest(m.id, card));
+
+  const loadingSpan = card.querySelector('.contact-loading');
+  if (loadingSpan) loadFullContact(m.id, card);
+
+  return card;
+}
+
+async function sendConnectionRequest(otherId, card) {
+  const { error } = await sb.from('connections').insert({ requester_id: myId, recipient_id: otherId, status: 'pending' });
+  if (!error) {
+    allConnections.push({ requester_id: myId, recipient_id: otherId, status: 'pending' });
+    card.querySelector('.event-actions').innerHTML = '<span class="muted-note">Request sent</span>';
+  }
+}
+
+async function loadFullContact(otherId, card) {
+  const { data } = await sb.from('profiles').select('name, contact').eq('id', otherId).maybeSingle();
+  const actions = card.querySelector('.event-actions');
+  if (!data || !data.contact) {
+    actions.innerHTML = '<span class="muted-note">Connected — no contact shared</span>';
+    return;
+  }
+  const first = (data.name || '').split(' ')[0];
+  const link = data.contact.includes('@')
+    ? `<a href="mailto:${data.contact}" target="_blank" rel="noopener">Email ${first}</a>`
+    : `<a href="tel:${data.contact.replace(/[^0-9+]/g, '')}" target="_blank" rel="noopener">Call/text ${first}</a>`;
+  actions.innerHTML = link;
+}
+
+function renderIncomingRequests() {
+  const existing = document.getElementById('requestsSection');
+  if (existing) existing.remove();
+
+  const incoming = allConnections.filter(c => c.recipient_id === myId && c.status === 'pending');
+  if (incoming.length === 0) return;
+
+  const section = document.createElement('div');
+  section.id = 'requestsSection';
+  section.innerHTML = `<div class="section-label">Contact requests (${incoming.length})</div>`;
+  incoming.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'request-row';
+    row.innerHTML = `
+      <span>Someone wants to connect</span>
+      <div class="request-actions">
+        <button data-action="accept">Accept</button>
+        <button data-action="decline">Decline</button>
+      </div>
+    `;
+    row.querySelector('[data-action="accept"]').addEventListener('click', () => respondToRequest(c.id, 'accepted', row));
+    row.querySelector('[data-action="decline"]').addEventListener('click', () => respondToRequest(c.id, 'declined', row));
+    section.appendChild(row);
+  });
+  document.getElementById('myProfileCard').insertAdjacentElement('afterend', section);
+}
+
+async function respondToRequest(connId, status, row) {
+  const { error } = await sb.from('connections').update({ status }).eq('id', connId);
+  if (!error) row.remove();
+}
+
+function renderMyProfileCard() {
+  const el = document.getElementById('myProfileCard');
+  el.innerHTML = `
+    <div class="my-profile-top">You: ${myProfile.name} — ${myProfile.role === 'mentor' ? 'Mentor' : 'Looking for a mentor'}</div>
+    <div class="my-profile-meta">${myProfile.branch} · ${stageLabel(myProfile.stage)}</div>
+    <div class="my-profile-actions">
+      <button id="editProfileBtn">Edit profile</button>
+      <button id="removeProfileBtn">Remove listing</button>
+      <button id="signOutBtn">Sign out</button>
+    </div>
+  `;
+  document.getElementById('editProfileBtn').addEventListener('click', () => openForm(myProfile.role));
+  document.getElementById('removeProfileBtn').addEventListener('click', async () => {
+    if (!confirm('Remove your listing from the mentor directory?')) return;
+    await sb.from('profiles').delete().eq('id', myId);
+    myProfile = null;
+    showMatchScreen('matchRoleSelect');
+  });
+  document.getElementById('signOutBtn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+  });
+}
+</script>
+</body>
+</html>
