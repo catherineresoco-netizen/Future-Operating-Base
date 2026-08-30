@@ -1055,12 +1055,12 @@ function addVisitedBadge(idx){
   }
 }
 
-async function saveProgress(){
+function saveProgress(){
   try {
-    await window.storage.set(STORAGE_KEY, JSON.stringify({
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
       visited: Array.from(visited),
       checked: checkedState
-    }), false);
+    }));
   } catch (err) {
     console.error('Could not save progress', err);
   }
@@ -1068,9 +1068,9 @@ async function saveProgress(){
 
 async function loadProgress(){
   try {
-    const result = await window.storage.get(STORAGE_KEY, false);
-    if (!result) return;
-    const data = JSON.parse(result.value);
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
     (data.visited || []).forEach(idx => {
       visited.add(idx);
       addVisitedBadge(idx);
@@ -1477,9 +1477,9 @@ function renderEventResults(results) {
 
 const ZIP_STORAGE_KEY = 'veteran-path-lastzip';
 
-async function saveLastZip(zip) {
+function saveLastZip(zip) {
   try {
-    await window.storage.set(ZIP_STORAGE_KEY, zip, false);
+    localStorage.setItem(ZIP_STORAGE_KEY, zip);
   } catch (err) {
     console.error('Could not save ZIP', err);
   }
@@ -1487,8 +1487,7 @@ async function saveLastZip(zip) {
 
 async function loadLastZip() {
   try {
-    const result = await window.storage.get(ZIP_STORAGE_KEY, false);
-    return result ? result.value : null;
+    return localStorage.getItem(ZIP_STORAGE_KEY);
   } catch (err) {
     return null;
   }
@@ -1533,9 +1532,9 @@ function initEventsTab() {
 
 const TM_KEY_STORAGE = 'veteran-path-tm-key';
 
-async function saveTmKey(key) {
+function saveTmKey(key) {
   try {
-    await window.storage.set(TM_KEY_STORAGE, key, false);
+    localStorage.setItem(TM_KEY_STORAGE, key);
   } catch (err) {
     console.error('Could not save Ticketmaster key', err);
   }
@@ -1543,8 +1542,7 @@ async function saveTmKey(key) {
 
 async function loadTmKey() {
   try {
-    const result = await window.storage.get(TM_KEY_STORAGE, false);
-    return result ? result.value : null;
+    return localStorage.getItem(TM_KEY_STORAGE);
   } catch (err) {
     return null;
   }
@@ -1753,7 +1751,8 @@ async function handleSaveProfile() {
     .maybeSingle();
 
   if (error) {
-    errEl.textContent = "Couldn't save your profile — try again in a moment.";
+    console.error('Profile save error:', error);
+    errEl.textContent = `Couldn't save: ${error.message || 'unknown error'}`;
     return;
   }
   myProfile = data;
