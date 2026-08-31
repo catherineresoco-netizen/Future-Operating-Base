@@ -784,6 +784,32 @@
     margin-bottom:10px;
   }
 
+  .edu-toggle{
+    display:flex;
+    gap:8px;
+    margin:16px 0 6px;
+  }
+  .edu-toggle-btn{
+    all:unset;
+    flex:1;
+    text-align:center;
+    box-sizing:border-box;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--ink);
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:14px;
+    padding:12px 8px;
+    cursor:pointer;
+  }
+  .edu-toggle-btn.active{
+    background:var(--navy);
+    border-color:var(--navy);
+    color:#fff;
+  }
+
   .request-row{
     display:flex;
     align-items:center;
@@ -1219,89 +1245,15 @@
   </footer>
 </div>
 
-<div class="wrap tab-panel" id="tab-match">
-  <div class="eyebrow">Battle Buddy Match</div>
-  <h1>Find a Mentor — or Be One</h1>
-  <div class="sub">Matched by branch and where you are on the timeline. Mentors are veterans one year or further out who've been through it.</div>
+<div class="wrap tab-panel" id="tab-documents">
+  <div class="eyebrow">Paper Trail</div>
+  <h1>VA &amp; Military Documents</h1>
+  <div class="sub">What each document is, why it matters, and when it becomes relevant. Tap a stage tag to jump to that checkpoint.</div>
 
-  <div id="matchLoading" class="events-status"><span class="spinner"></span><span>Loading…</span></div>
+  <input type="text" id="documentsSearch" class="zip-input full" placeholder="Search documents…">
 
-  <!-- Screen 0: sign in -->
-  <div id="matchAuthGate" class="match-screen" style="display:none;">
-    <div class="auth-card">
-      <div class="section-label">Sign in to continue</div>
-      <p class="auth-copy">We use a one-time email link — no password to create or leak. You'll only need to do this once per device.</p>
-      <input type="email" id="authEmail" class="zip-input full" placeholder="you@example.com" autocomplete="email">
-      <button type="button" class="zip-btn full-btn" id="authSendLink">Send Magic Link</button>
-      <div id="authStatus" class="events-status"></div>
-    </div>
-  </div>
-
-  <!-- Screen 1: choose role -->
-  <div id="matchRoleSelect" class="match-screen" style="display:none;">
-    <button class="role-card role-mentee" id="chooseMentee">
-      <span class="role-icon">🧭</span>
-      <span class="role-title">I want a mentor</span>
-      <span class="role-sub">New to the timeline, have questions</span>
-    </button>
-    <button class="role-card role-mentor" id="chooseMentor">
-      <span class="role-icon">🎖️</span>
-      <span class="role-title">I want to mentor</span>
-      <span class="role-sub">1+ year out, willing to answer questions</span>
-    </button>
-  </div>
-
-  <!-- Screen 2: profile form -->
-  <div id="matchForm" class="match-screen" style="display:none;">
-    <div class="section-label" id="formRoleLabel">Your info</div>
-    <input type="text" id="matchName" class="zip-input full" placeholder="Nickname or first name" maxlength="30">
-    <select id="matchBranch" class="zip-input full"></select>
-    <select id="matchStage" class="zip-input full"></select>
-    <input type="text" id="matchContact" class="zip-input full" placeholder="Email or phone (optional)">
-    <div class="tm-settings-note" id="mentorEligNote" style="display:none;">
-      Mentors must be at least 1 year past separation — the stage list above only shows eligible options.
-    </div>
-    <div class="tm-settings-note">
-      Shown to other users of this app. Leave contact blank if you'd rather not share it — you can add it later.
-    </div>
-    <div class="match-form-actions">
-      <button type="button" class="zip-btn ghost" id="formBack">Back</button>
-      <button type="button" class="zip-btn" id="formSave">Save &amp; Find Matches</button>
-    </div>
-    <div id="formError" class="events-status error"></div>
-  </div>
-
-  <!-- Screen 3: results -->
-  <div id="matchResults" class="match-screen" style="display:none;">
-    <div class="my-profile-card" id="myProfileCard"></div>
-
-    <div class="section-label" id="matchesLabel">Your matches</div>
-    <div id="matchesStatus" class="events-status"></div>
-    <div id="matchesList" class="events-results"></div>
-  </div>
-
-  <div class="tm-settings-note match-privacy-note">
-    This is a lightweight directory, not a private messaging system — anything you enter here (including contact info) is visible to anyone using this app. Share only what you're comfortable with.
-  </div>
-</div>
-
-<div class="wrap tab-panel" id="tab-tips">
-  <div class="eyebrow">From Vets Who've Been There</div>
-  <h1>Quick Tips</h1>
-  <div class="sub">Short, practical things people wish they'd known. Vote the useful ones to the top.</div>
-
-  <div class="tip-submit-card" id="tipSubmitCard">
-    <textarea id="tipInput" class="zip-input full tip-textarea" placeholder="Share a quick tip…" maxlength="280" rows="3"></textarea>
-    <button type="button" class="zip-btn full-btn" id="tipSubmitBtn">Post Tip</button>
-    <div id="tipSubmitStatus" class="events-status"></div>
-  </div>
-
-  <div id="tipsSignInNote" class="tm-settings-note" style="display:none;">
-    <a href="#" id="tipsSignInLink">Sign in</a> to post a tip or vote.
-  </div>
-
-  <div id="tipsStatus" class="events-status"></div>
-  <div id="tipsList" class="events-results"></div>
+  <div id="documentsList" class="glossary-list"></div>
+  <div id="documentsEmpty" class="events-status" style="display:none;">No documents match your search.</div>
 </div>
 
 <div class="wrap tab-panel" id="tab-glossary">
@@ -1317,17 +1269,48 @@
   <div id="glossaryEmpty" class="events-status" style="display:none;">No terms match your search.</div>
 </div>
 
-<div class="wrap tab-panel" id="tab-messages">
-  <div class="eyebrow">Your Conversations</div>
-  <h1>Messages</h1>
-  <div class="sub">Chats with your connected mentors and mentees.</div>
+<div class="wrap tab-panel" id="tab-education">
+  <div class="eyebrow">Education &amp; Training</div>
+  <h1>Your Benefit Path</h1>
+  <div class="sub">Toggle between the Post-9/11 GI Bill and VR&amp;E to see the full process for whichever applies to you.</div>
 
-  <div id="messagesSignInNote" class="tm-settings-note" style="display:none;">
-    <a href="#" id="messagesSignInLink">Sign in</a> to see your messages.
+  <div class="edu-toggle" id="eduToggle" role="tablist" aria-label="Education benefit">
+    <button type="button" class="edu-toggle-btn active" data-track="gibill" role="tab" aria-selected="true">🎓 GI Bill</button>
+    <button type="button" class="edu-toggle-btn" data-track="vre" role="tab" aria-selected="false">🛠️ VR&amp;E</button>
   </div>
 
-  <div id="conversationsStatus" class="events-status"></div>
-  <div id="conversationsList" class="conversations-list"></div>
+  <div class="progress" id="eduProgress">
+    <div class="progress-label" id="eduProgressLabel">0 of 6 explored</div>
+  </div>
+
+  <div class="path-container" id="eduPathContainer">
+    <svg id="eduPathSvg" preserveAspectRatio="none" role="img" aria-label="Education benefit timeline"></svg>
+  </div>
+
+  <footer>
+    Informational reference only, not official guidance. Confirm current eligibility, forms, and timelines with the VA or your VR&amp;E counselor before acting.
+  </footer>
+</div>
+
+<div class="backdrop" id="eduBackdrop"></div>
+<div class="sheet" id="eduSheet">
+  <div class="sheet-top" id="eduSheetTop">
+    <button class="sheet-close" id="eduSheetClose" aria-label="Close">✕</button>
+    <span class="sheet-icon" id="eduSheetIcon"></span>
+    <div class="sheet-t" id="eduSheetT"></div>
+    <div class="sheet-title" id="eduSheetTitle"></div>
+    <div class="sheet-blurb" id="eduSheetBlurb"></div>
+  </div>
+  <div class="sheet-body">
+    <div class="section-label must-label">Must do</div>
+    <div id="eduChecklistMust"></div>
+    <div class="done-msg" id="eduDoneMsg"></div>
+    <div class="section-label rec-label">Recommended</div>
+    <div id="eduChecklistRec"></div>
+    <div class="section-label">Resources</div>
+    <div class="link-row" id="eduLinkRow"></div>
+  </div>
+  <button class="got-it" id="eduGotIt">Got it!</button>
 </div>
 
 <nav class="tabbar" id="tabbar" role="tablist" aria-label="Main sections">
@@ -1339,20 +1322,13 @@
     <span class="tab-icon" aria-hidden="true">📍</span>
     <span class="tab-label">Events</span>
   </button>
-  <button class="tab-btn" data-tab="tab-match" id="tabBtnMatch" role="tab" aria-selected="false">
-    <span class="tab-icon" aria-hidden="true">🤝</span>
-    <span class="tab-label">Match</span>
+  <button class="tab-btn" data-tab="tab-education" id="tabBtnEducation" role="tab" aria-selected="false">
+    <span class="tab-icon" aria-hidden="true">🎓</span>
+    <span class="tab-label">Education</span>
   </button>
-  <button class="tab-btn" data-tab="tab-messages" id="tabBtnMessages" role="tab" aria-selected="false">
-    <span class="tab-icon-wrap">
-      <span class="tab-icon" aria-hidden="true">💬</span>
-      <span class="unread-dot" id="unreadDot" style="display:none;" role="status" aria-label="Unread messages"></span>
-    </span>
-    <span class="tab-label">Messages</span>
-  </button>
-  <button class="tab-btn" data-tab="tab-tips" id="tabBtnTips" role="tab" aria-selected="false">
-    <span class="tab-icon" aria-hidden="true">💡</span>
-    <span class="tab-label">Tips</span>
+  <button class="tab-btn" data-tab="tab-documents" id="tabBtnDocuments" role="tab" aria-selected="false">
+    <span class="tab-icon" aria-hidden="true">📄</span>
+    <span class="tab-label">Docs</span>
   </button>
   <button class="tab-btn" data-tab="tab-glossary" id="tabBtnGlossary" role="tab" aria-selected="false">
     <span class="tab-icon" aria-hidden="true">📖</span>
@@ -1383,16 +1359,20 @@
   <button class="got-it" id="gotIt">Got it!</button>
 </div>
 
-<div class="chat-overlay" id="chatOverlay">
+<div class="chat-overlay" id="accountOverlay">
   <div class="chat-header">
-    <button type="button" class="chat-back" id="chatBack" aria-label="Back to messages">‹</button>
-    <span class="chat-partner-name" id="chatPartnerName"></span>
+    <button type="button" class="chat-back" id="accountClose" aria-label="Close">‹</button>
+    <span class="chat-partner-name">Sign In</span>
   </div>
-  <div class="chat-messages" id="chatMessages"></div>
-  <form class="chat-input-row" id="chatForm">
-    <input type="text" id="chatInput" class="chat-input" placeholder="Message…" maxlength="2000" autocomplete="off">
-    <button type="submit" class="chat-send">Send</button>
-  </form>
+  <div class="sheet-body">
+    <div class="auth-card">
+      <div class="section-label">Sync across devices</div>
+      <p class="auth-copy">We use a one-time email link — no password to create or leak. You'll only need to do this once per device.</p>
+      <input type="email" id="authEmail" class="zip-input full" placeholder="you@example.com" autocomplete="email">
+      <button type="button" class="zip-btn full-btn" id="authSendLink">Send Magic Link</button>
+      <div id="authStatus" class="events-status"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1409,29 +1389,420 @@ let currentSession = null;
 
 function onGlobalAuthChange(session) {
   currentSession = session;
-  myId = session ? session.user.id : null;
   handleProgressSync(session);
-  if (typeof matchTabInitialized !== 'undefined' && matchTabInitialized) {
-    handleSession(session);
-  }
-  if (typeof tipsTabInitialized !== 'undefined' && tipsTabInitialized) {
-    loadTips();
-  }
-  if (session) {
-    subscribeGlobalMessages();
-    refreshUnreadBadge();
-  } else {
-    unsubscribeGlobalMessages();
-    setUnreadBadge(0);
-  }
-  if (typeof messagesTabInitialized !== 'undefined' && messagesTabInitialized) {
-    loadConversations();
-  }
 }
 
 if (sb) {
   sb.auth.onAuthStateChange((_event, session) => onGlobalAuthChange(session));
   sb.auth.getSession().then(({ data }) => onGlobalAuthChange(data.session));
+}
+
+/* ---------------- Education Path (GI Bill / VR&E) ---------------- */
+
+const EDU_TRACKS = {
+  gibill: {
+    label: "Post-9/11 GI Bill",
+    stops: [
+      { icon: "🔍", color: "var(--olive)", sh: "var(--olive-sh)", title: "Check Eligibility",
+        blurb: "Post-9/11 GI Bill eligibility is based on your aggregate active-duty time after September 10, 2001.",
+        must: [
+          "Confirm at least 90 aggregate days of active duty after 9/10/2001 (or a qualifying disability discharge after 30 days)",
+          "Check whether your benefit is at 100% or a reduced percentage based on service time",
+          "Decide if you're using your own GI Bill or a transferred benefit from a sponsor",
+          "Review your remaining months of entitlement (up to 36 months total)",
+          "Check whether a 15-year use-it-or-lose-it window applies to you (removed for most who separated on or after 2013)"
+        ],
+        recommended: [
+          "Talk to your installation education office before you separate",
+          "Research whether the Yellow Ribbon Program applies to your target school",
+          "Look into VetTec as an alternative for tech-focused training"
+        ],
+        links: [["GI Bill overview","https://www.va.gov/education/about-gi-bill-benefits/"],["GI Bill Comparison Tool","https://www.va.gov/education/gi-bill-comparison-tool/"],["TAP overview","https://www.dol.gov/agencies/vets/tap"]]
+      },
+      { icon: "📜", color: "var(--khaki)", sh: "var(--khaki-sh)", title: "Get Your COE",
+        blurb: "Your Certificate of Eligibility is what proves your benefit to any school you attend.",
+        must: [
+          "Submit VA Form 22-1990 to apply for benefits",
+          "Wait for your Certificate of Eligibility (COE) to arrive",
+          "Read your COE carefully — check your remaining entitlement and percentage",
+          "Keep a digital and physical copy of your COE",
+          "Note your delimiting date (benefit expiration) if one applies to you"
+        ],
+        recommended: [
+          "Set up a VA.gov account if you haven't already",
+          "Ask your admin office about the process while you still have base support",
+          "Save your DD214 alongside your COE — schools may ask for both"
+        ],
+        links: [["Apply for education benefits","https://www.va.gov/education/how-to-apply/"],["VA.gov sign-in","https://www.va.gov/sign-in/"]]
+      },
+      { icon: "🏫", color: "var(--stblue)", sh: "var(--stblue-sh)", title: "Choose Your School",
+        blurb: "Not every program pays out the same — compare before you commit.",
+        must: [
+          "Confirm your school or program is VA-approved",
+          "Use the GI Bill Comparison Tool to check tuition, housing rate, and outcomes",
+          "Check if the school participates in the Yellow Ribbon Program",
+          "Compare in-state vs out-of-state tuition against your housing allowance",
+          "Confirm the program length fits within your remaining entitlement"
+        ],
+        recommended: [
+          "Visit campus or take a virtual tour if you're unsure",
+          "Talk to current students or alumni who used the GI Bill there",
+          "Ask about transfer credit for military training (Joint Services Transcript)"
+        ],
+        links: [["GI Bill Comparison Tool","https://www.va.gov/education/gi-bill-comparison-tool/"]]
+      },
+      { icon: "✍️", color: "var(--oldglory)", sh: "var(--oldglory-sh)", big: true, title: "Certify Enrollment",
+        blurb: "Nothing pays out until your school certifies you're actually enrolled.",
+        must: [
+          "Find your school's certifying official (SCO)",
+          "Submit your COE to the SCO",
+          "Confirm your course schedule is submitted for certification each term",
+          "Verify your enrollment status (full-time vs part-time) — this changes your housing payment",
+          "Set up direct deposit with the VA for your payments"
+        ],
+        recommended: [
+          "Ask your SCO how they handle schedule changes or drops",
+          "Confirm your first payment timeline before classes start",
+          "Save your SCO's contact info for the rest of your program"
+        ],
+        links: [["Apply for education benefits","https://www.va.gov/education/how-to-apply/"],["VA.gov sign-in","https://www.va.gov/sign-in/"]]
+      },
+      { icon: "💰", color: "var(--navy)", sh: "var(--navy-sh)", title: "Manage Your Benefit",
+        blurb: "Payments, credit hours, and entitlement — this is the maintenance phase.",
+        must: [
+          "Track your Monthly Housing Allowance (MHA) payments",
+          "Confirm your book stipend arrived",
+          "Maintain your certified credit hours — dropping classes can trigger overpayments",
+          "Monitor your remaining months of entitlement each term",
+          "Report any schedule changes to your SCO right away"
+        ],
+        recommended: [
+          "Set a reminder to re-certify enrollment each term",
+          "Build a small buffer for possible payment delays",
+          "Look into GI Bill tutorial assistance if you're struggling in a course"
+        ],
+        links: [["GI Bill Comparison Tool","https://www.va.gov/education/gi-bill-comparison-tool/"],["VA.gov sign-in","https://www.va.gov/sign-in/"]]
+      },
+      { icon: "🎓", color: "var(--gold)", sh: "var(--gold-sh)", big: true, title: "Finish Strong",
+        blurb: "The finish line — and the start of whatever's next.",
+        must: [
+          "Confirm your final term is certified correctly",
+          "Request your final transcripts",
+          "Check if you have remaining entitlement for a second credential",
+          "Update your resume with your new degree or certification",
+          "Decide your next step — further education, VR&E, or straight into your career"
+        ],
+        recommended: [
+          "Connect with your school's career services office",
+          "Explore whether your new credential opens VA-adjacent career paths",
+          "If eligible, remember benefit transfer to a dependent must be requested while still serving"
+        ],
+        links: [["GI Bill overview","https://www.va.gov/education/about-gi-bill-benefits/"],["USAJobs veterans","https://www.usajobs.gov/Veterans"]]
+      }
+    ]
+  },
+  vre: {
+    label: "VR&E (Chapter 31)",
+    stops: [
+      { icon: "🔍", color: "var(--olive)", sh: "var(--olive-sh)", title: "Check Eligibility",
+        blurb: "VR&E is built around employability, for veterans whose service-connected disability affects their ability to work.",
+        must: [
+          "Confirm you have a service-connected disability rating with an employment handicap (criteria vary by rating)",
+          "Apply within your basic period of eligibility — generally around 12 years from separation or your first rating, with extensions possible for serious barriers to employment",
+          "Gather your VA disability rating decision letter",
+          "Understand VR&E is different from the GI Bill — it's centered on employability, not just education",
+          "Decide whether VR&E, the GI Bill, or both fit your situation — confirm with a counselor how they interact"
+        ],
+        recommended: [
+          "Talk to a VSO about whether you qualify",
+          "Review your disability rating decision letter for your combined rating",
+          "Ask any current VA case manager whether VR&E fits your situation"
+        ],
+        links: [["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"],["VA disability claims","https://www.va.gov/disability/how-to-file-claim/"]]
+      },
+      { icon: "📝", color: "var(--khaki)", sh: "var(--khaki-sh)", title: "Apply (VA Form 28-1900)",
+        blurb: "This is the actual application that starts your VR&E case.",
+        must: [
+          "Submit VA Form 28-1900, Disabled Veterans Application for Vocational Rehabilitation",
+          "Include your VA disability rating information",
+          "Submit through VA.gov, by mail, or in person at a VA regional office",
+          "Note your application confirmation or case number",
+          "Watch for a scheduling notice for your entrance evaluation"
+        ],
+        recommended: [
+          "Apply as early as you're eligible — earlier applications mean earlier services",
+          "Ask a VSO to help you complete the form",
+          "Keep copies of everything you submit"
+        ],
+        links: [["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"]]
+      },
+      { icon: "🗣️", color: "var(--stblue)", sh: "var(--stblue-sh)", title: "Entrance Evaluation",
+        blurb: "You'll meet with a Vocational Rehabilitation Counselor (VRC) to talk through your goals.",
+        must: [
+          "Attend your scheduled entrance evaluation appointment",
+          "Bring service and medical records if requested",
+          "Be ready to discuss your work history, interests, and how your disability affects employment",
+          "Ask your VRC to explain each VR&E track and which might fit you",
+          "Confirm next steps and timeline after the evaluation"
+        ],
+        recommended: [
+          "Write down your career goals beforehand",
+          "Ask about the independent living track if employment isn't the immediate goal",
+          "Bring a list of questions about pay, benefits, and timelines"
+        ],
+        links: [["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"]]
+      },
+      { icon: "📋", color: "var(--oldglory)", sh: "var(--oldglory-sh)", big: true, title: "Build Your Plan (IWRP)",
+        blurb: "Your Individualized Written Rehabilitation Plan is the roadmap for your entire case.",
+        must: [
+          "Work with your VRC to finalize your Individualized Written Rehabilitation Plan (IWRP)",
+          "Confirm your chosen track — reemployment, rapid access to employment, self-employment, long-term education/training, or independent living",
+          "Review what training, education, or support services are approved under your plan",
+          "Understand your subsistence allowance — a monthly stipend while you're in the program",
+          "Sign and keep a copy of your finalized IWRP"
+        ],
+        recommended: [
+          "Ask about time limits or benchmarks tied to your plan",
+          "Clarify what happens if your goals change mid-program",
+          "Confirm how often you'll check in with your VRC"
+        ],
+        links: [["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"]]
+      },
+      { icon: "📚", color: "var(--navy)", sh: "var(--navy-sh)", title: "Begin Your Program",
+        blurb: "Whatever your track, this is where the real work — training, school, or job search — begins.",
+        must: [
+          "Start your approved training, education, or employment services",
+          "Confirm your subsistence allowance payments are arriving on schedule",
+          "Keep your VRC updated on your progress",
+          "Report any changes in circumstances — health, enrollment, address — promptly",
+          "Maintain any enrollment or performance requirements tied to your plan"
+        ],
+        recommended: [
+          "Build a simple way to track milestones in your IWRP",
+          "Reach out early if you're struggling — plans can be adjusted",
+          "Connect with other veterans going through VR&E"
+        ],
+        links: [["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"]]
+      },
+      { icon: "🏁", color: "var(--gold)", sh: "var(--gold-sh)", big: true, title: "Complete & Transition",
+        blurb: "Finishing your program is the goal — job placement support is part of the deal too.",
+        must: [
+          "Complete your training, education, or employment milestones",
+          "Work with your VRC on job-seeking or placement support if your track includes it",
+          "Confirm your case closure paperwork once your rehabilitation goals are met",
+          "Update your resume and LinkedIn with your new skills or credential",
+          "Ask about continued support options if you need them after case closure"
+        ],
+        recommended: [
+          "Apply to vet-friendly employers first",
+          "Use veterans' preference through USAJobs if you're considering federal work",
+          "Stay connected with your VRC's office in case anything comes up later"
+        ],
+        links: [["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"],["USAJobs veterans","https://www.usajobs.gov/Veterans"]]
+      }
+    ]
+  }
+};
+
+let eduTrack = 'gibill';
+let eduVisited = { gibill: new Set(), vre: new Set() };
+let eduCheckedState = {
+  gibill: EDU_TRACKS.gibill.stops.map(s => ({ must: s.must.map(() => false), recommended: s.recommended.map(() => false) })),
+  vre: EDU_TRACKS.vre.stops.map(s => ({ must: s.must.map(() => false), recommended: s.recommended.map(() => false) }))
+};
+let eduInitialized = false;
+let eduCurrentIdx = null;
+
+const eduXPercents = [50, 20, 72, 25, 68, 50];
+const eduYStep = 132;
+const eduYStart = 46;
+
+function buildEduPath() {
+  const trackStops = EDU_TRACKS[eduTrack].stops;
+  const container = document.getElementById('eduPathContainer');
+  const svg = document.getElementById('eduPathSvg');
+  container.innerHTML = '';
+  container.appendChild(svg);
+  svg.innerHTML = '';
+
+  const totalHeight = eduYStart + (trackStops.length - 1) * eduYStep + 70;
+  container.style.height = totalHeight + 'px';
+  svg.setAttribute('viewBox', `0 0 100 ${totalHeight}`);
+
+  const points = trackStops.map((s, i) => ({ x: eduXPercents[i], y: eduYStart + i * eduYStep }));
+
+  let pathD = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i++) pathD += ` L ${points[i].x} ${points[i].y}`;
+  const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  pathEl.setAttribute('d', pathD);
+  pathEl.setAttribute('fill', 'none');
+  pathEl.setAttribute('stroke', '#E4DFEE');
+  pathEl.setAttribute('stroke-width', '5');
+  pathEl.setAttribute('stroke-linecap', 'round');
+  pathEl.setAttribute('stroke-linejoin', 'round');
+  pathEl.setAttribute('stroke-dasharray', '1 11');
+  pathEl.setAttribute('vector-effect', 'non-scaling-stroke');
+  svg.appendChild(pathEl);
+
+  trackStops.forEach((s, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'node-wrap';
+    wrap.style.left = points[i].x + '%';
+    wrap.style.top = points[i].y + 'px';
+    wrap.innerHTML = `
+      <button class="node-btn ${s.big ? 'big' : ''}" id="edunodebtn-${i}" data-idx="${i}"
+        aria-label="Step ${i + 1} — ${s.title}. Tap to see checklist."
+        style="background:${s.color}; box-shadow:0 5px 0 ${s.sh}; color:${s.color};">
+        ${s.icon}
+      </button>
+      <div class="node-label">
+        <div class="node-t">Step ${i + 1}</div>
+        <div class="node-title">${s.title}</div>
+      </div>
+    `;
+    container.appendChild(wrap);
+    if (s.big) document.getElementById(`edunodebtn-${i}`).classList.add('node-pulse');
+    if (eduVisited[eduTrack].has(i)) addEduVisitedBadge(i);
+  });
+
+  updateEduProgress();
+}
+
+function addEduVisitedBadge(idx) {
+  const host = document.getElementById(`edunodebtn-${idx}`);
+  if (host && !host.querySelector('.node-badge')) {
+    const badge = document.createElement('span');
+    badge.className = 'node-badge';
+    badge.textContent = '✓';
+    host.appendChild(badge);
+  }
+}
+
+function updateEduProgress() {
+  const trackStops = EDU_TRACKS[eduTrack].stops;
+  const prog = document.getElementById('eduProgress');
+  const label = document.getElementById('eduProgressLabel');
+  label.textContent = `${eduVisited[eduTrack].size} of ${trackStops.length} explored`;
+  prog.querySelectorAll('.pip').forEach(p => p.remove());
+  trackStops.forEach((s, i) => {
+    const pip = document.createElement('div');
+    pip.className = 'pip' + (eduVisited[eduTrack].has(i) ? ' on' : '');
+    if (eduVisited[eduTrack].has(i)) {
+      pip.style.background = getComputedStyle(document.documentElement)
+        .getPropertyValue(s.color.replace('var(', '').replace(')', '')) || s.color;
+    }
+    prog.insertBefore(pip, label);
+  });
+}
+
+function renderEduChecklist(idx) {
+  const s = EDU_TRACKS[eduTrack].stops[idx];
+  const mustEl = document.getElementById('eduChecklistMust');
+  const recEl = document.getElementById('eduChecklistRec');
+  mustEl.innerHTML = '';
+  recEl.innerHTML = '';
+
+  s.must.forEach((item, ci) => mustEl.appendChild(buildEduChip(idx, 'must', ci, item)));
+  s.recommended.forEach((item, ci) => recEl.appendChild(buildEduChip(idx, 'recommended', ci, item)));
+
+  const state = eduCheckedState[eduTrack][idx];
+  const mustDone = state.must.every(Boolean);
+  const recDone = state.recommended.every(Boolean);
+  const doneMsg = document.getElementById('eduDoneMsg');
+  if (mustDone && recDone) {
+    doneMsg.textContent = '🌟 Every item done.';
+    doneMsg.classList.add('show');
+  } else if (mustDone) {
+    doneMsg.textContent = '✅ Must-dos handled. Nice work.';
+    doneMsg.classList.add('show');
+  } else {
+    doneMsg.classList.remove('show');
+  }
+}
+
+function buildEduChip(idx, kind, ci, item) {
+  const chip = document.createElement('button');
+  const isChecked = eduCheckedState[eduTrack][idx][kind][ci];
+  chip.className = 'chip' + (kind === 'recommended' ? ' recommended' : '') + (isChecked ? ' checked' : '');
+  chip.innerHTML = `<span class="box">${isChecked ? '✓' : ''}</span><span class="txt">${item}</span>`;
+  chip.addEventListener('click', () => {
+    eduCheckedState[eduTrack][idx][kind][ci] = !eduCheckedState[eduTrack][idx][kind][ci];
+    renderEduChecklist(idx);
+    saveProgress();
+  });
+  return chip;
+}
+
+function openEduSheet(idx) {
+  eduCurrentIdx = idx;
+  const s = EDU_TRACKS[eduTrack].stops[idx];
+
+  document.getElementById('eduSheetTop').style.background = s.color;
+  document.getElementById('eduSheetIcon').textContent = s.icon;
+  document.getElementById('eduSheetT').textContent = `Step ${idx + 1}`;
+  document.getElementById('eduSheetTitle').textContent = s.title;
+  document.getElementById('eduSheetBlurb').textContent = s.blurb;
+
+  renderEduChecklist(idx);
+
+  const linkRow = document.getElementById('eduLinkRow');
+  linkRow.innerHTML = '';
+  s.links.forEach(([label, url]) => {
+    const a = document.createElement('a');
+    a.className = 'link-pill';
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.style.background = s.sh;
+    a.textContent = label;
+    linkRow.appendChild(a);
+  });
+
+  const gotIt = document.getElementById('eduGotIt');
+  gotIt.style.background = s.color;
+  gotIt.style.boxShadow = `0 5px 0 ${s.sh}`;
+
+  eduVisited[eduTrack].add(idx);
+  addEduVisitedBadge(idx);
+  updateEduProgress();
+  saveProgress();
+
+  document.getElementById('eduBackdrop').classList.add('show');
+  document.getElementById('eduSheet').classList.add('show');
+}
+
+function closeEduSheet() {
+  document.getElementById('eduBackdrop').classList.remove('show');
+  document.getElementById('eduSheet').classList.remove('show');
+}
+
+function initEducationTab() {
+  if (eduInitialized) return;
+  eduInitialized = true;
+
+  document.querySelectorAll('.edu-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      eduTrack = btn.getAttribute('data-track');
+      document.querySelectorAll('.edu-toggle-btn').forEach(b => {
+        const isActive = b === btn;
+        b.classList.toggle('active', isActive);
+        b.setAttribute('aria-selected', String(isActive));
+      });
+      buildEduPath();
+    });
+  });
+
+  document.getElementById('eduPathContainer').addEventListener('click', (e) => {
+    const btn = e.target.closest('.node-btn');
+    if (!btn) return;
+    openEduSheet(parseInt(btn.getAttribute('data-idx')));
+  });
+
+  document.getElementById('eduBackdrop').addEventListener('click', closeEduSheet);
+  document.getElementById('eduSheetClose').addEventListener('click', closeEduSheet);
+  document.getElementById('eduGotIt').addEventListener('click', closeEduSheet);
+
+  buildEduPath();
 }
 
 const stops = [
@@ -1676,13 +2047,47 @@ function applyProgressData(data){
   }
   easDate = data.easDate || null;
   userBranch = data.branch || '';
+  applyEduData(data);
   updateProgress();
   applyPersonalization();
   if (migrated) saveProgress();
 }
 
+function applyEduData(data){
+  eduTrack = (data.eduTrack === 'vre') ? 'vre' : 'gibill';
+  ['gibill', 'vre'].forEach(track => {
+    const savedVisited = data.eduVisited && Array.isArray(data.eduVisited[track]) ? data.eduVisited[track] : [];
+    eduVisited[track] = new Set(savedVisited);
+
+    const savedChecked = data.eduChecked && Array.isArray(data.eduChecked[track]) ? data.eduChecked[track] : null;
+    eduCheckedState[track] = EDU_TRACKS[track].stops.map((s, idx) => {
+      const saved = savedChecked && savedChecked[idx];
+      return {
+        must: s.must.map((_, ci) => (saved && Array.isArray(saved.must) && typeof saved.must[ci] === 'boolean') ? saved.must[ci] : false),
+        recommended: s.recommended.map((_, ci) => (saved && Array.isArray(saved.recommended) && typeof saved.recommended[ci] === 'boolean') ? saved.recommended[ci] : false)
+      };
+    });
+  });
+  if (eduInitialized) {
+    document.querySelectorAll('.edu-toggle-btn').forEach(b => {
+      const isActive = b.getAttribute('data-track') === eduTrack;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-selected', String(isActive));
+    });
+    buildEduPath();
+  }
+}
+
+function buildEduPayload(){
+  return {
+    eduTrack,
+    eduVisited: { gibill: Array.from(eduVisited.gibill), vre: Array.from(eduVisited.vre) },
+    eduChecked: eduCheckedState
+  };
+}
+
 function saveProgress(){
-  const payload = { visited: Array.from(visited), checked: checkedState, easDate, branch: userBranch };
+  const payload = { visited: Array.from(visited), checked: checkedState, easDate, branch: userBranch, ...buildEduPayload() };
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -1698,7 +2103,7 @@ function saveProgress(){
 }
 
 async function pushProgressToCloud(userId){
-  const payload = { visited: Array.from(visited), checked: checkedState, easDate, branch: userBranch };
+  const payload = { visited: Array.from(visited), checked: checkedState, easDate, branch: userBranch, ...buildEduPayload() };
   try {
     await sb.from('checklist_progress')
       .upsert({ id: userId, data: payload, updated_at: new Date().toISOString() });
@@ -1859,7 +2264,7 @@ async function handleProgressSync(session){
       const link = document.getElementById('syncSignInLink');
       if (link) link.addEventListener('click', (e) => {
         e.preventDefault();
-        document.getElementById('tabBtnMatch').click();
+        openAccountOverlay();
       });
     }
   }
@@ -2007,10 +2412,8 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet
 
 const tabButtons = document.querySelectorAll('.tab-btn');
 let eventsTabInitialized = false;
-let matchTabInitialized = false;
-let tipsTabInitialized = false;
 let glossaryTabInitialized = false;
-let messagesTabInitialized = false;
+let documentsTabInitialized = false;
 
 tabButtons.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -2027,25 +2430,16 @@ tabButtons.forEach(btn => {
       eventsTabInitialized = true;
       initEventsTab();
     }
-    if (target === 'tab-match' && !matchTabInitialized) {
-      matchTabInitialized = true;
-      initMatchTab();
-    }
-    if (target === 'tab-tips' && !tipsTabInitialized) {
-      tipsTabInitialized = true;
-      initTipsTab();
-    }
     if (target === 'tab-glossary' && !glossaryTabInitialized) {
       glossaryTabInitialized = true;
       initGlossaryTab();
     }
-    if (target === 'tab-messages') {
-      if (!messagesTabInitialized) {
-        messagesTabInitialized = true;
-        initMessagesTab();
-      } else {
-        loadConversations();
-      }
+    if (target === 'tab-documents' && !documentsTabInitialized) {
+      documentsTabInitialized = true;
+      initDocumentsTab();
+    }
+    if (target === 'tab-education') {
+      initEducationTab();
     }
   });
 });
@@ -2399,446 +2793,6 @@ function renderTicketmasterEvents(events) {
   });
 }
 
-/* ---------------- Mentor / Mentee Match (Supabase-backed) ---------------- */
-
-const BRANCHES = ['Army', 'Navy', 'Air Force', 'Marine Corps', 'Space Force', 'Coast Guard'];
-const ALL_STAGE_CODES = stops.map(s => s.t); // ["T-60","T-30","T-14","T-0","6 MO","1 YR","2+ YR"]
-const MENTOR_ELIGIBLE_STAGES = ['1 YR', '2+ YR'];
-
-let myId = null;
-let myProfile = null;
-let pendingRole = null;
-let allConnections = [];
-
-function stageLabel(code) {
-  const stop = stops.find(s => s.t === code);
-  return stop ? `${code} · ${stop.title}` : code;
-}
-
-function populateBranchSelect(select) {
-  select.innerHTML = '<option value="" disabled selected>Branch of service</option>' +
-    BRANCHES.map(b => `<option value="${b}">${b}</option>`).join('');
-}
-
-function populateStageSelect(select, role) {
-  const codes = role === 'mentor' ? MENTOR_ELIGIBLE_STAGES : ALL_STAGE_CODES;
-  select.innerHTML = '<option value="" disabled selected>Where are you on the timeline?</option>' +
-    codes.map(c => `<option value="${c}">${stageLabel(c)}</option>`).join('');
-}
-
-function showMatchScreen(name) {
-  document.getElementById('matchLoading').style.display = 'none';
-  ['matchAuthGate', 'matchRoleSelect', 'matchForm', 'matchResults'].forEach(id => {
-    document.getElementById(id).style.display = id === name ? 'block' : 'none';
-  });
-}
-
-function initMatchTab() {
-  if (!sb) {
-    showMatchScreen('matchAuthGate');
-    document.getElementById('authStatus').textContent = 'Backend not connected yet — add your Supabase URL and key in the app code.';
-    return;
-  }
-
-  document.getElementById('authSendLink').addEventListener('click', handleSendMagicLink);
-  document.getElementById('chooseMentee').addEventListener('click', () => openForm('mentee'));
-  document.getElementById('chooseMentor').addEventListener('click', () => openForm('mentor'));
-  document.getElementById('formBack').addEventListener('click', () => showMatchScreen(myProfile ? 'matchResults' : 'matchRoleSelect'));
-  document.getElementById('formSave').addEventListener('click', handleSaveProfile);
-
-  populateBranchSelect(document.getElementById('matchBranch'));
-
-  // global auth listener (registered at script load) already tracks currentSession —
-  // just react to whatever it currently is
-  handleSession(currentSession);
-}
-
-async function handleSendMagicLink() {
-  const email = document.getElementById('authEmail').value.trim();
-  const statusEl = document.getElementById('authStatus');
-  if (!email || !email.includes('@')) {
-    statusEl.className = 'events-status error';
-    statusEl.textContent = 'Enter a valid email address.';
-    return;
-  }
-  statusEl.className = 'events-status';
-  statusEl.innerHTML = '<span class="spinner"></span><span>Sending link…</span>';
-
-  const { error } = await sb.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: window.location.href }
-  });
-
-  if (error) {
-    statusEl.className = 'events-status error';
-    statusEl.textContent = error.message;
-  } else {
-    statusEl.className = 'events-status success';
-    statusEl.textContent = `Check ${email} for a sign-in link, then come back here.`;
-  }
-}
-
-async function handleSession(session) {
-  if (!session) {
-    myId = null;
-    myProfile = null;
-    showMatchScreen('matchAuthGate');
-    return;
-  }
-  myId = session.user.id;
-  myProfile = await getMyProfile();
-  if (myProfile) {
-    renderResultsScreen();
-  } else {
-    showMatchScreen('matchRoleSelect');
-  }
-}
-
-async function getMyProfile() {
-  const { data, error } = await sb.from('profiles').select('*').eq('id', myId).maybeSingle();
-  if (error) { console.error(error); return null; }
-  return data;
-}
-
-function openForm(role) {
-  pendingRole = role;
-  document.getElementById('formRoleLabel').textContent = role === 'mentor' ? 'Your mentor profile' : 'Your mentee profile';
-  document.getElementById('mentorEligNote').style.display = role === 'mentor' ? 'block' : 'none';
-  populateStageSelect(document.getElementById('matchStage'), role);
-  document.getElementById('matchName').value = myProfile ? myProfile.name : '';
-  document.getElementById('matchContact').value = myProfile ? (myProfile.contact || '') : '';
-  document.getElementById('matchBranch').value = myProfile ? myProfile.branch : '';
-  document.getElementById('formError').textContent = '';
-  showMatchScreen('matchForm');
-}
-
-async function handleSaveProfile() {
-  const name = document.getElementById('matchName').value.trim();
-  const branch = document.getElementById('matchBranch').value;
-  const stage = document.getElementById('matchStage').value;
-  const contact = document.getElementById('matchContact').value.trim();
-  const errEl = document.getElementById('formError');
-
-  if (!name || !branch || !stage) {
-    errEl.textContent = 'Fill in a nickname, branch, and stage to continue.';
-    return;
-  }
-  if (pendingRole === 'mentor' && !MENTOR_ELIGIBLE_STAGES.includes(stage)) {
-    errEl.textContent = 'Mentors need to be at least 1 year past separation.';
-    return;
-  }
-  errEl.textContent = '';
-
-  const { data, error } = await sb.from('profiles')
-    .upsert({ id: myId, name, branch, stage, role: pendingRole, contact })
-    .select()
-    .maybeSingle();
-
-  if (error) {
-    console.error('Profile save error:', error);
-    errEl.textContent = `Couldn't save: ${error.message || 'unknown error'}`;
-    return;
-  }
-  myProfile = data;
-  renderResultsScreen();
-}
-
-async function renderResultsScreen() {
-  showMatchScreen('matchResults');
-  renderMyProfileCard();
-
-  const { data: conns } = await sb.from('connections')
-    .select('*')
-    .or(`requester_id.eq.${myId},recipient_id.eq.${myId}`);
-  allConnections = conns || [];
-  renderIncomingRequests();
-
-  const wantRole = myProfile.role === 'mentee' ? 'mentor' : 'mentee';
-  const statusEl = document.getElementById('matchesStatus');
-  const listEl = document.getElementById('matchesList');
-  document.getElementById('matchesLabel').textContent = myProfile.role === 'mentee' ? 'Mentors for you' : 'Mentees looking for a mentor';
-  listEl.innerHTML = '';
-  statusEl.className = 'events-status';
-  statusEl.innerHTML = '<span class="spinner"></span><span>Finding matches…</span>';
-
-  const { data: matches, error } = await sb.rpc('get_matches', { want_role: wantRole });
-  if (error) {
-    statusEl.className = 'events-status error';
-    statusEl.textContent = "Couldn't load matches right now.";
-    return;
-  }
-
-  const sorted = (matches || []).slice().sort((a, b) => {
-    const aSame = a.branch === myProfile.branch ? 0 : 1;
-    const bSame = b.branch === myProfile.branch ? 0 : 1;
-    return aSame - bSame;
-  });
-
-  if (sorted.length === 0) {
-    statusEl.textContent = wantRole === 'mentor'
-      ? 'No mentors listed yet. Check back soon.'
-      : 'No mentees looking for a mentor right now.';
-    return;
-  }
-
-  statusEl.textContent = `${sorted.length} ${wantRole}${sorted.length === 1 ? '' : 's'} found.`;
-  sorted.forEach(m => listEl.appendChild(buildMatchCard(m)));
-}
-
-function connectionWith(otherId) {
-  return allConnections.find(c =>
-    (c.requester_id === myId && c.recipient_id === otherId) ||
-    (c.recipient_id === myId && c.requester_id === otherId)
-  );
-}
-
-function buildMatchCard(m) {
-  const card = document.createElement('div');
-  card.className = 'event-card';
-  const sameBranch = m.branch === myProfile.branch;
-  const conn = connectionWith(m.id);
-
-  let actionHtml;
-  if (conn && conn.status === 'accepted') {
-    actionHtml = `<button class="request-btn message-btn">💬 Message</button>`;
-  } else if (conn && conn.status === 'pending' && conn.requester_id === myId) {
-    actionHtml = `<span class="muted-note">Request sent</span>`;
-  } else if (conn && conn.status === 'pending' && conn.recipient_id === myId) {
-    actionHtml = `<span class="muted-note">Check requests above</span>`;
-  } else if (conn && conn.status === 'declined') {
-    actionHtml = `<span class="muted-note">Not connected</span>`;
-  } else {
-    actionHtml = `<button class="request-btn">Request to connect</button>`;
-  }
-
-  card.innerHTML = `
-    <div class="event-card-top">
-      <div class="event-icon" style="background:${m.role === 'mentor' ? 'var(--oldglory)' : 'var(--stblue)'}">${m.role === 'mentor' ? '🎖️' : '🧭'}</div>
-      <div class="event-info">
-        <div class="event-name">${m.name}</div>
-        <div class="badge-row">
-          ${sameBranch ? '<span class="badge same-branch">Same branch</span>' : `<span class="badge branch">${m.branch}</span>`}
-          <span class="badge stage">${m.stage}</span>
-        </div>
-      </div>
-    </div>
-    <div class="event-actions">${actionHtml}</div>
-  `;
-
-  const messageBtn = card.querySelector('.message-btn');
-  if (messageBtn) messageBtn.addEventListener('click', () => openChat(conn.id, m.id, m.name));
-
-  const reqBtn = card.querySelector('.request-btn:not(.message-btn)');
-  if (reqBtn) reqBtn.addEventListener('click', () => sendConnectionRequest(m.id, card));
-
-  return card;
-}
-
-async function sendConnectionRequest(otherId, card) {
-  const { error } = await sb.from('connections').insert({ requester_id: myId, recipient_id: otherId, status: 'pending' });
-  if (!error) {
-    allConnections.push({ requester_id: myId, recipient_id: otherId, status: 'pending' });
-    card.querySelector('.event-actions').innerHTML = '<span class="muted-note">Request sent</span>';
-  }
-}
-
-function renderIncomingRequests() {
-  const existing = document.getElementById('requestsSection');
-  if (existing) existing.remove();
-
-  const incoming = allConnections.filter(c => c.recipient_id === myId && c.status === 'pending');
-  if (incoming.length === 0) return;
-
-  const section = document.createElement('div');
-  section.id = 'requestsSection';
-  section.innerHTML = `<div class="section-label">Contact requests (${incoming.length})</div>`;
-  incoming.forEach(c => {
-    const row = document.createElement('div');
-    row.className = 'request-row';
-    row.innerHTML = `
-      <span>Someone wants to connect</span>
-      <div class="request-actions">
-        <button data-action="accept">Accept</button>
-        <button data-action="decline">Decline</button>
-      </div>
-    `;
-    row.querySelector('[data-action="accept"]').addEventListener('click', () => respondToRequest(c.id, 'accepted', row));
-    row.querySelector('[data-action="decline"]').addEventListener('click', () => respondToRequest(c.id, 'declined', row));
-    section.appendChild(row);
-  });
-  document.getElementById('myProfileCard').insertAdjacentElement('afterend', section);
-}
-
-async function respondToRequest(connId, status, row) {
-  const { error } = await sb.from('connections').update({ status }).eq('id', connId);
-  if (!error) row.remove();
-}
-
-function renderMyProfileCard() {
-  const el = document.getElementById('myProfileCard');
-  el.innerHTML = `
-    <div class="my-profile-top">You: ${myProfile.name} — ${myProfile.role === 'mentor' ? 'Mentor' : 'Looking for a mentor'}</div>
-    <div class="my-profile-meta">${myProfile.branch} · ${stageLabel(myProfile.stage)}</div>
-    <div class="my-profile-actions">
-      <button id="editProfileBtn">Edit profile</button>
-      <button id="removeProfileBtn">Remove listing</button>
-      <button id="signOutBtn">Sign out</button>
-    </div>
-  `;
-  document.getElementById('editProfileBtn').addEventListener('click', () => openForm(myProfile.role));
-  document.getElementById('removeProfileBtn').addEventListener('click', async () => {
-    if (!confirm('Remove your listing from the mentor directory?')) return;
-    await sb.from('profiles').delete().eq('id', myId);
-    myProfile = null;
-    showMatchScreen('matchRoleSelect');
-  });
-  document.getElementById('signOutBtn').addEventListener('click', async () => {
-    await sb.auth.signOut();
-  });
-}
-
-/* ---------------- Quick Tips ---------------- */
-
-let myTipVotes = {}; // { tip_id: 1 | -1 }
-
-function initTipsTab() {
-  document.getElementById('tipSubmitBtn').addEventListener('click', handleSubmitTip);
-  document.getElementById('tipsSignInLink').addEventListener('click', (e) => {
-    e.preventDefault();
-    document.getElementById('tabBtnMatch').click();
-  });
-  loadTips();
-}
-
-function updateTipsAuthUI() {
-  const submitCard = document.getElementById('tipSubmitCard');
-  const signInNote = document.getElementById('tipsSignInNote');
-  const signedIn = !!currentSession;
-  submitCard.style.display = signedIn ? 'block' : 'none';
-  signInNote.style.display = signedIn ? 'none' : 'block';
-}
-
-async function loadTips() {
-  updateTipsAuthUI();
-  const statusEl = document.getElementById('tipsStatus');
-  const listEl = document.getElementById('tipsList');
-
-  if (!sb) {
-    statusEl.className = 'events-status error';
-    statusEl.textContent = 'Backend not connected yet.';
-    return;
-  }
-
-  statusEl.className = 'events-status';
-  statusEl.innerHTML = '<span class="spinner"></span><span>Loading tips…</span>';
-  listEl.innerHTML = '';
-
-  if (currentSession) {
-    const { data: votes } = await sb.from('tip_votes')
-      .select('tip_id, vote')
-      .eq('user_id', currentSession.user.id);
-    myTipVotes = {};
-    (votes || []).forEach(v => { myTipVotes[v.tip_id] = v.vote; });
-  } else {
-    myTipVotes = {};
-  }
-
-  const { data: tips, error } = await sb.rpc('get_tips_with_scores');
-  if (error) {
-    statusEl.className = 'events-status error';
-    statusEl.textContent = "Couldn't load tips right now.";
-    return;
-  }
-
-  if (!tips || tips.length === 0) {
-    statusEl.textContent = 'No tips yet — be the first to share one.';
-    return;
-  }
-
-  statusEl.textContent = '';
-  tips.forEach(t => listEl.appendChild(buildTipCard(t)));
-}
-
-function buildTipCard(t) {
-  const card = document.createElement('div');
-  card.className = 'tip-card';
-  const myVote = myTipVotes[t.id];
-  const when = new Date(t.created_at).toLocaleDateString();
-
-  card.innerHTML = `
-    <div class="tip-votes">
-      <button class="vote-btn up ${myVote === 1 ? 'active' : ''}" data-dir="1" aria-label="Upvote this tip" aria-pressed="${myVote === 1}">▲</button>
-      <span class="tip-score" aria-label="Score ${t.score}">${t.score}</span>
-      <button class="vote-btn down ${myVote === -1 ? 'active' : ''}" data-dir="-1" aria-label="Downvote this tip" aria-pressed="${myVote === -1}">▼</button>
-    </div>
-    <div class="tip-body">
-      <div class="tip-content">${escapeHtml(t.content)}</div>
-      <div class="tip-meta">Posted ${when}</div>
-    </div>
-  `;
-
-  card.querySelectorAll('.vote-btn').forEach(btn => {
-    btn.addEventListener('click', () => handleVote(t.id, parseInt(btn.getAttribute('data-dir'))));
-  });
-
-  return card;
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-async function handleVote(tipId, direction) {
-  if (!currentSession) {
-    document.getElementById('tabBtnMatch').click();
-    return;
-  }
-  const existing = myTipVotes[tipId];
-
-  try {
-    if (existing === direction) {
-      // tapping the same arrow again removes the vote
-      await sb.from('tip_votes').delete().eq('tip_id', tipId).eq('user_id', currentSession.user.id);
-    } else {
-      await sb.from('tip_votes').upsert({ tip_id: tipId, user_id: currentSession.user.id, vote: direction });
-    }
-  } catch (err) {
-    console.error('Vote failed', err);
-  }
-  loadTips();
-}
-
-async function handleSubmitTip() {
-  const input = document.getElementById('tipInput');
-  const statusEl = document.getElementById('tipSubmitStatus');
-  const content = input.value.trim();
-
-  if (!content) {
-    statusEl.className = 'events-status error';
-    statusEl.textContent = 'Write something before posting.';
-    return;
-  }
-  if (!currentSession) {
-    document.getElementById('tabBtnMatch').click();
-    return;
-  }
-
-  statusEl.className = 'events-status';
-  statusEl.innerHTML = '<span class="spinner"></span><span>Posting…</span>';
-
-  const { error } = await sb.from('tips').insert({ author_id: currentSession.user.id, content });
-  if (error) {
-    statusEl.className = 'events-status error';
-    statusEl.textContent = `Couldn't post: ${error.message}`;
-    return;
-  }
-  input.value = '';
-  statusEl.textContent = '';
-  loadTips();
-}
-
 /* ---------------- Glossary ---------------- */
 
 const GLOSSARY_TERMS = [
@@ -2878,7 +2832,14 @@ const GLOSSARY_TERMS = [
   { term: "VFW (Veterans of Foreign Wars)", def: "A veterans service organization with local posts offering advocacy, community, and claims support for combat veterans.", stages: [] },
   { term: "VGLI (Veterans' Group Life Insurance)", def: "The life insurance policy SGLI converts into after separation — free conversion window is about 120 days, full window about a year.", stages: ["T-0","1 YR"] },
   { term: "VR&E (Veteran Readiness & Employment)", def: "A VA program (formerly Vocational Rehabilitation) helping veterans with service-connected disabilities prepare for and find work.", stages: ["6 MO"] },
-  { term: "VSO (Veterans Service Organization)", def: "A general term for nonprofit organizations — VFW, American Legion, DAV, and others — that support veterans, often with free claims help.", stages: ["6 MO","1 YR"] }
+  { term: "VSO (Veterans Service Organization)", def: "A general term for nonprofit organizations — VFW, American Legion, DAV, and others — that support veterans, often with free claims help.", stages: ["6 MO","1 YR"] },
+  { term: "Certificate of Eligibility (COE)", def: "A document proving eligibility for a specific benefit — most commonly used for the GI Bill (shows remaining entitlement) or a VA home loan (proves loan eligibility to a lender).", stages: ["T-60","6 MO","1 YR","2+ YR"] },
+  { term: "DD Form 2648", def: "The Pre-Separation Counseling Checklist — documents that you've completed the mandatory initial counseling that kicks off the TAP process.", stages: ["T-365","T-180"] },
+  { term: "SGLV 8714", def: "The application form used to convert your SGLI coverage into VGLI after you separate.", stages: ["T-0","1 YR"] },
+  { term: "VA Disability Rating Decision Letter", def: "The official letter stating your assigned disability rating percentage and effective date, used to prove eligibility for many other benefits.", stages: ["6 MO","1 YR","2+ YR"] },
+  { term: "VA Form 10-10EZ", def: "The application form used to enroll in VA health care.", stages: ["T-60","T-0"] },
+  { term: "VA Form 21-526EZ", def: "The application form used to file a VA disability compensation claim, whether pre-discharge or after separation.", stages: ["T-180","T-90"] },
+  { term: "VA Form 22-1990", def: "The application form used to apply for the GI Bill and most other VA education benefits.", stages: ["T-365","6 MO"] }
 ];
 
 function initGlossaryTab() {
@@ -2969,243 +2930,193 @@ function jumpToStage(code) {
   setTimeout(() => openSheet(idx), 60);
 }
 
-/* ---------------- In-app Chat ---------------- */
+/* ---------------- Account sign-in (needed for cross-device sync) ---------------- */
 
-let currentChatConnectionId = null;
-let currentChatChannel = null;
-let chatWired = false;
-
-function wireChatOnce() {
-  if (chatWired) return;
-  chatWired = true;
-  document.getElementById('chatBack').addEventListener('click', closeChat);
-  document.getElementById('chatForm').addEventListener('submit', handleSendMessage);
+function openAccountOverlay() {
+  document.getElementById('accountOverlay').classList.add('show');
 }
 
-async function openChat(connectionId, partnerId, partnerName) {
-  wireChatOnce();
-  currentChatConnectionId = connectionId;
-  document.getElementById('chatPartnerName').textContent = partnerName;
-  const messagesEl = document.getElementById('chatMessages');
-  messagesEl.innerHTML = '<div class="chat-empty">Loading conversation…</div>';
-  document.getElementById('chatOverlay').classList.add('show');
-
-  await loadChatHistory(connectionId);
-  subscribeToChat(connectionId);
-  markConversationRead(connectionId);
+function closeAccountOverlay() {
+  document.getElementById('accountOverlay').classList.remove('show');
 }
 
-function closeChat() {
-  document.getElementById('chatOverlay').classList.remove('show');
-  if (currentChatChannel) {
-    sb.removeChannel(currentChatChannel);
-    currentChatChannel = null;
-  }
-  currentChatConnectionId = null;
-  refreshUnreadBadge();
-  if (typeof messagesTabInitialized !== 'undefined' && messagesTabInitialized) {
-    loadConversations();
-  }
-}
+document.getElementById('accountClose').addEventListener('click', closeAccountOverlay);
+document.getElementById('authSendLink').addEventListener('click', handleSendMagicLink);
 
-async function markConversationRead(connectionId) {
-  if (!sb || !myId) return;
-  try {
-    await sb.from('conversation_reads').upsert({
-      connection_id: connectionId,
-      user_id: myId,
-      last_read_at: new Date().toISOString()
-    });
-  } catch (err) {
-    console.error('Could not mark conversation read', err);
-  }
-  refreshUnreadBadge();
-}
-
-async function loadChatHistory(connectionId) {
-  const messagesEl = document.getElementById('chatMessages');
-  const { data, error } = await sb.from('messages')
-    .select('*')
-    .eq('connection_id', connectionId)
-    .order('created_at', { ascending: true });
-
-  messagesEl.innerHTML = '';
-  if (error) {
-    messagesEl.innerHTML = '<div class="chat-empty">Couldn\'t load messages right now.</div>';
+async function handleSendMagicLink() {
+  const email = document.getElementById('authEmail').value.trim();
+  const statusEl = document.getElementById('authStatus');
+  if (!email || !email.includes('@')) {
+    statusEl.className = 'events-status error';
+    statusEl.textContent = 'Enter a valid email address.';
     return;
   }
-  if (!data || data.length === 0) {
-    messagesEl.innerHTML = '<div class="chat-empty">No messages yet — say hello.</div>';
-    return;
-  }
-  data.forEach(appendChatBubble);
-  scrollChatToBottom();
-}
-
-function appendChatBubble(msg) {
-  const messagesEl = document.getElementById('chatMessages');
-  const empty = messagesEl.querySelector('.chat-empty');
-  if (empty) empty.remove();
-
-  const mine = msg.sender_id === myId;
-  const bubble = document.createElement('div');
-  bubble.className = 'chat-bubble ' + (mine ? 'mine' : 'theirs');
-  bubble.textContent = msg.content;
-  messagesEl.appendChild(bubble);
-}
-
-function scrollChatToBottom() {
-  const messagesEl = document.getElementById('chatMessages');
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-}
-
-function subscribeToChat(connectionId) {
-  if (currentChatChannel) {
-    sb.removeChannel(currentChatChannel);
-  }
-  currentChatChannel = sb
-    .channel('chat-' + connectionId)
-    .on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'messages',
-      filter: `connection_id=eq.${connectionId}`
-    }, (payload) => {
-      // avoid double-rendering messages we just sent ourselves
-      if (payload.new.sender_id === myId) return;
-      appendChatBubble(payload.new);
-      scrollChatToBottom();
-      markConversationRead(connectionId);
-    })
-    .subscribe();
-}
-
-async function handleSendMessage(e) {
-  e.preventDefault();
-  const input = document.getElementById('chatInput');
-  const content = input.value.trim();
-  if (!content || !currentChatConnectionId) return;
-
-  input.value = '';
-  const optimistic = { sender_id: myId, content };
-  appendChatBubble(optimistic);
-  scrollChatToBottom();
-
-  const { error } = await sb.from('messages').insert({
-    connection_id: currentChatConnectionId,
-    sender_id: myId,
-    content
-  });
-  if (error) console.error('Send failed', error);
-}
-
-/* ---------------- Messages tab & unread badge ---------------- */
-
-let globalMessagesChannel = null;
-
-function initMessagesTab() {
-  document.getElementById('messagesSignInLink').addEventListener('click', (e) => {
-    e.preventDefault();
-    document.getElementById('tabBtnMatch').click();
-  });
-  loadConversations();
-}
-
-async function loadConversations() {
-  const statusEl = document.getElementById('conversationsStatus');
-  const listEl = document.getElementById('conversationsList');
-  const signInNote = document.getElementById('messagesSignInNote');
-
-  if (!currentSession) {
-    signInNote.style.display = 'block';
-    statusEl.textContent = '';
-    listEl.innerHTML = '';
-    return;
-  }
-  signInNote.style.display = 'none';
-
   if (!sb) {
     statusEl.className = 'events-status error';
     statusEl.textContent = 'Backend not connected yet.';
     return;
   }
-
   statusEl.className = 'events-status';
-  statusEl.innerHTML = '<span class="spinner"></span><span>Loading conversations…</span>';
-  listEl.innerHTML = '';
+  statusEl.innerHTML = '<span class="spinner"></span><span>Sending link…</span>';
 
-  const { data, error } = await sb.rpc('get_my_conversations');
+  const { error } = await sb.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.href }
+  });
+
   if (error) {
     statusEl.className = 'events-status error';
-    statusEl.textContent = "Couldn't load conversations right now.";
-    return;
+    statusEl.textContent = error.message;
+  } else {
+    statusEl.className = 'events-status success';
+    statusEl.textContent = `Check ${email} for a sign-in link, then come back here.`;
   }
-
-  if (!data || data.length === 0) {
-    statusEl.textContent = 'No conversations yet — connect with a mentor or mentee in the Match tab.';
-    return;
-  }
-
-  statusEl.textContent = '';
-  data.forEach(c => listEl.appendChild(buildConversationRow(c)));
-
-  refreshUnreadBadge();
 }
 
-function buildConversationRow(c) {
-  const row = document.createElement('button');
-  const unread = c.unread_count > 0;
-  row.className = 'convo-row' + (unread ? ' unread' : '');
-  const initial = (c.partner_name || '?').charAt(0).toUpperCase();
-  const preview = c.last_message ? c.last_message : 'Say hello';
-  const when = c.last_message_at ? new Date(c.last_message_at).toLocaleDateString() : '';
+/* ---------------- VA & Military Documents ---------------- */
 
-  row.innerHTML = `
-    <div class="convo-avatar">${initial}</div>
-    <div class="convo-body">
-      <div class="convo-name">${c.partner_name}</div>
-      <div class="convo-preview">${escapeHtml(preview)}${when ? ' · ' + when : ''}</div>
+const DOCUMENTS = [
+  {
+    name: "DD214",
+    subtitle: "Certificate of Release or Discharge from Active Duty",
+    purpose: "Your single most important document as a veteran — proof of service, dates, discharge type, and awards. Nearly every VA benefit, job application, and state veteran program will ask for it.",
+    when: "Issued right at separation. Start verifying it for accuracy before then — mistakes are far easier to fix while you're still in than after you're out.",
+    stages: ["T-30", "T-0"],
+    link: "https://www.va.gov/records/get-military-service-records/",
+    linkLabel: "Get or correct your DD214"
+  },
+  {
+    name: "VA Form 21-526EZ",
+    subtitle: "Application for Disability Compensation and Related Compensation Benefits",
+    purpose: "The actual form used to file a VA disability claim, whether through the pre-discharge program or as a standard claim after separation.",
+    when: "File early if you can — a pre-discharge claim can mean a faster decision after you're out.",
+    stages: ["T-180", "T-90"],
+    link: "https://www.va.gov/disability/how-to-file-claim/",
+    linkLabel: "File a disability claim"
+  },
+  {
+    name: "VA Form 10-10EZ",
+    subtitle: "Application for Health Benefits",
+    purpose: "Enrolls you in VA health care. Without this on file, you can't be seen at VA facilities or use VA health benefits.",
+    when: "Pre-enroll before you separate so coverage is active on day one, not weeks later.",
+    stages: ["T-60", "T-0"],
+    link: "https://www.va.gov/health-care/how-to-apply/",
+    linkLabel: "Apply for VA health care"
+  },
+  {
+    name: "SGLV 8714",
+    subtitle: "Application for Veterans' Group Life Insurance (VGLI)",
+    purpose: "Converts your SGLI coverage into VGLI so your life insurance doesn't lapse after separation.",
+    when: "Free conversion window is about 120 days after separation; full conversion window (with proof of good health) runs about a year.",
+    stages: ["T-0", "1 YR"],
+    link: "https://www.va.gov/life-insurance/options-eligibility/vgli/",
+    linkLabel: "Convert to VGLI"
+  },
+  {
+    name: "VA Form 22-1990",
+    subtitle: "Application for VA Education Benefits",
+    purpose: "The form used to apply for the GI Bill and most other VA education benefits.",
+    when: "Apply as soon as you know your education plans — processing can take a few weeks.",
+    stages: ["T-365", "6 MO"],
+    link: "https://www.va.gov/education/how-to-apply/",
+    linkLabel: "Apply for education benefits"
+  },
+  {
+    name: "Certificate of Eligibility (COE) — GI Bill",
+    subtitle: "Proof of your remaining GI Bill entitlement",
+    purpose: "Shows schools exactly how much GI Bill benefit you have left. Most schools' certifying officials will ask to see it directly.",
+    when: "Comes automatically after your 22-1990 is approved — keep a copy on hand whenever you enroll somewhere new.",
+    stages: ["6 MO", "1 YR", "2+ YR"],
+    link: "https://www.va.gov/education/gi-bill-comparison-tool/",
+    linkLabel: "Check GI Bill benefits"
+  },
+  {
+    name: "VA Disability Rating Decision Letter",
+    subtitle: "Official notice of your disability rating and effective date",
+    purpose: "States your percentage rating for each service-connected condition and your combined rating. Used to prove eligibility for property tax exemptions, hiring preferences, and other state and federal benefits.",
+    when: "Arrives after your claim is decided. If it looks wrong, this is the document you'll reference in a Higher-Level Review or Supplemental Claim.",
+    stages: ["6 MO", "1 YR", "2+ YR"],
+    link: "https://www.va.gov/decision-reviews/",
+    linkLabel: "Review a claim decision"
+  },
+  {
+    name: "Official Military Personnel File (OMPF)",
+    subtitle: "Your complete service record",
+    purpose: "The full record of your military career — evaluations, awards, assignments, and more. Useful for resumes, security clearance renewals, and correcting your DD214 if something's wrong on it.",
+    when: "Worth requesting a personal copy before you separate, while it's easiest to get.",
+    stages: ["T-180"],
+    link: "https://www.va.gov/records/get-military-service-records/",
+    linkLabel: "Request your OMPF"
+  },
+  {
+    name: "DD Form 2648",
+    subtitle: "Pre-Separation Counseling Checklist",
+    purpose: "Documents that you've completed mandatory pre-separation counseling — the formal start of the TAP process.",
+    when: "Typically completed early, well before your final TAP curriculum requirements are due.",
+    stages: ["T-365", "T-180"],
+    link: "https://www.esd.whs.mil/Directives/forms/",
+    linkLabel: "DoD forms library"
+  },
+  {
+    name: "VA Home Loan Certificate of Eligibility (COE)",
+    subtitle: "Proof of eligibility for a VA-backed home loan",
+    purpose: "Confirms to lenders that you qualify for a VA home loan — often letting you buy with no down payment and no private mortgage insurance.",
+    when: "Get it whenever you're ready to buy — no expiration, no rush before separation.",
+    stages: ["T-60", "2+ YR"],
+    link: "https://www.va.gov/housing-assistance/home-loans/how-to-request-coe/",
+    linkLabel: "Request your COE"
+  }
+];
+
+function initDocumentsTab() {
+  document.getElementById('documentsSearch').addEventListener('input', (e) => {
+    renderDocuments(e.target.value);
+  });
+  renderDocuments('');
+}
+
+function renderDocuments(query) {
+  const q = query.trim().toLowerCase();
+  const filtered = DOCUMENTS.filter(d =>
+    !q ||
+    d.name.toLowerCase().includes(q) ||
+    d.subtitle.toLowerCase().includes(q) ||
+    d.purpose.toLowerCase().includes(q)
+  );
+
+  const listEl = document.getElementById('documentsList');
+  const emptyEl = document.getElementById('documentsEmpty');
+  listEl.innerHTML = '';
+
+  if (filtered.length === 0) {
+    emptyEl.style.display = 'block';
+    return;
+  }
+  emptyEl.style.display = 'none';
+  filtered.forEach(d => listEl.appendChild(buildDocumentItem(d)));
+}
+
+function buildDocumentItem(d) {
+  const item = document.createElement('div');
+  item.className = 'glossary-item';
+  const tagsHtml = d.stages.map(code => `<button class="glossary-tag" data-stage="${code}">${code}</button>`).join('');
+
+  item.innerHTML = `
+    <div class="glossary-term">${d.name}</div>
+    <div class="tip-meta">${d.subtitle}</div>
+    <div class="glossary-def">${d.purpose}</div>
+    <div class="glossary-def"><strong>When it matters:</strong> ${d.when}</div>
+    ${tagsHtml ? `<div class="glossary-tags">${tagsHtml}</div>` : ''}
+    <div class="link-row" style="margin-top:8px; margin-bottom:0;">
+      <a class="link-pill" style="background:var(--navy);" href="${d.link}" target="_blank" rel="noopener">${d.linkLabel}</a>
     </div>
-    ${unread ? `<div class="convo-badge">${c.unread_count}</div>` : ''}
   `;
-  row.addEventListener('click', () => openChat(c.connection_id, c.partner_id, c.partner_name));
-  return row;
+  item.querySelectorAll('.glossary-tag').forEach(btn => {
+    btn.addEventListener('click', () => jumpToStage(btn.getAttribute('data-stage')));
+  });
+  return item;
 }
 
-function setUnreadBadge(count) {
-  const dot = document.getElementById('unreadDot');
-  if (dot) dot.style.display = count > 0 ? 'block' : 'none';
-}
-
-async function refreshUnreadBadge() {
-  if (!sb || !currentSession) { setUnreadBadge(0); return; }
-  const { data, error } = await sb.rpc('get_unread_message_count');
-  if (!error) setUnreadBadge(data || 0);
-}
-
-function subscribeGlobalMessages() {
-  if (!sb || globalMessagesChannel) return;
-  globalMessagesChannel = sb
-    .channel('global-messages')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-      if (payload.new.sender_id === myId) return;
-      refreshUnreadBadge();
-      if (typeof messagesTabInitialized !== 'undefined' && messagesTabInitialized) {
-        const messagesTab = document.getElementById('tab-messages');
-        if (messagesTab && messagesTab.classList.contains('active')) {
-          loadConversations();
-        }
-      }
-    })
-    .subscribe();
-}
-
-function unsubscribeGlobalMessages() {
-  if (globalMessagesChannel) {
-    sb.removeChannel(globalMessagesChannel);
-    globalMessagesChannel = null;
-  }
-}
 </script>
 </body>
 </html>
