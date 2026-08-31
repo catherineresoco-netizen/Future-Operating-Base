@@ -15,15 +15,42 @@
     --track:#D8DCE3;
     --card:#FFFFFF;
 
-    --slate:#8A94A6;   --slate-sh:#626B7A;
-    --alert:#D9622B;   --alert-sh:#A84A1F;
-    --olive:#7C8E42;   --olive-sh:#586A2A;
-    --khaki:#D6A756;   --khaki-sh:#B3823A;
-    --stblue:#4A7FBF;  --stblue-sh:#2F5A94;
-    --oldglory:#C8283F;--oldglory-sh:#961C2E;
-    --navy:#324875;    --navy-sh:#1D2C4D;
-    --bronze:#A0682D;  --bronze-sh:#7C4F20;
-    --gold:#E8B923;    --gold-sh:#B8900F;
+    /* Blue family */
+    --blue1:#3FB4E0;   --blue1-sh:#2489AE;
+    --blue2:#1E88E5;   --blue2-sh:#1560A8;
+    --blue3:#0F5A9E;   --blue3-sh:#0A3E70;
+
+    /* Navy family */
+    --navy1:#4A6FA5;   --navy1-sh:#344F78;
+    --navy2:#2C4A78;   --navy2-sh:#1D3356;
+    --navy3:#12294E;   --navy3-sh:#0B1B35;
+
+    /* Red family */
+    --red1:#FF3355;    --red1-sh:#C4213F;
+    --red2:#E8213D;    --red2-sh:#B01730;
+    --red3:#A6172E;    --red3-sh:#791020;
+
+    /* Burgundy family */
+    --burg1:#8A2F42;   --burg1-sh:#611F2D;
+    --burg2:#6B1626;   --burg2-sh:#4A0F1A;
+    --burg3:#4A0F1A;   --burg3-sh:#300A11;
+
+    /* legacy aliases kept for compatibility with any leftover references */
+    --slate:var(--navy1);      --slate-sh:var(--navy1-sh);
+    --alert:var(--red1);       --alert-sh:var(--red1-sh);
+    --olive:var(--blue3);      --olive-sh:var(--blue3-sh);
+    --khaki:var(--blue1);      --khaki-sh:var(--blue1-sh);
+    --stblue:var(--blue2);     --stblue-sh:var(--blue2-sh);
+    --oldglory:var(--red2);    --oldglory-sh:var(--red2-sh);
+    --navy:var(--navy3);       --navy-sh:var(--navy3-sh);
+    --bronze:var(--burg2);     --bronze-sh:var(--burg2-sh);
+    --gold:var(--red3);        --gold-sh:var(--red3-sh);
+    --sky:var(--blue1);        --sky-sh:var(--blue1-sh);
+    --crimson:var(--burg1);    --crimson-sh:var(--burg1-sh);
+    --steel:var(--navy1);      --steel-sh:var(--navy1-sh);
+
+    --tab-accent:var(--red2);
+    --tab-accent-sh:var(--red2-sh);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;background:var(--bg);color:var(--ink);}
@@ -41,7 +68,7 @@
     font-size:12px;
     letter-spacing:0.14em;
     text-transform:uppercase;
-    color:var(--oldglory);
+    color:var(--tab-accent);
     margin-bottom:4px;
   }
   h1{
@@ -367,7 +394,7 @@
     background:var(--card);
     border-top:2px solid var(--track);
     display:flex;
-    padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
     z-index:30;
   }
   .tab-btn{
@@ -376,12 +403,13 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:2px;
-    padding:6px 0;
+    gap:1px;
+    padding:5px 0;
     cursor:pointer;
-    border-radius:12px;
+    border-radius:10px;
+    min-width:0;
   }
-  .tab-icon{font-size:20px; opacity:0.5;}
+  .tab-icon{font-size:17px; opacity:0.5;}
   .tab-icon-wrap{position:relative; display:inline-block;}
   .unread-dot{
     position:absolute;
@@ -394,11 +422,12 @@
   .tab-label{
     font-family:'Baloo 2',sans-serif;
     font-weight:700;
-    font-size:11px;
+    font-size:9px;
     color:var(--muted);
+    white-space:nowrap;
   }
   .tab-btn.active .tab-icon{opacity:1;}
-  .tab-btn.active .tab-label{color:var(--oldglory);}
+  .tab-btn.active .tab-label{color:var(--tab-accent);}
 
   /* zip form */
   .zip-form{
@@ -427,8 +456,8 @@
     font-weight:700;
     font-size:14px;
     color:#fff;
-    background:var(--oldglory);
-    box-shadow:0 4px 0 var(--oldglory-sh);
+    background:var(--tab-accent);
+    box-shadow:0 4px 0 var(--tab-accent-sh);
     padding:12px 16px;
     border-radius:14px;
     cursor:pointer;
@@ -451,7 +480,7 @@
     width:16px; height:16px;
     border-radius:50%;
     border:3px solid var(--track);
-    border-top-color:var(--stblue);
+    border-top-color:var(--tab-accent);
     animation:spin 0.8s linear infinite;
     flex-shrink:0;
   }
@@ -949,7 +978,7 @@
     font-family:'Baloo 2',sans-serif;
     font-weight:700;
     font-size:13px;
-    color:var(--oldglory);
+    color:var(--tab-accent);
     margin:18px 0 8px;
   }
   .glossary-letter:first-child{margin-top:4px;}
@@ -986,10 +1015,48 @@
     font-weight:700;
     font-size:10px;
     color:#fff;
-    background:var(--navy);
+    background:var(--burg1);
     padding:3px 8px;
     border-radius:999px;
     cursor:pointer;
+  }
+
+  .faq-list{margin-top:14px;}
+  .faq-item{
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:16px;
+    padding:14px 16px;
+    margin-bottom:10px;
+  }
+  .faq-item summary{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--ink);
+    cursor:pointer;
+    list-style:none;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .faq-item summary::-webkit-details-marker{display:none;}
+  .faq-item summary::after{
+    content:'+';
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:18px;
+    color:var(--tab-accent);
+    flex-shrink:0;
+  }
+  .faq-item[open] summary::after{content:'–';}
+  .faq-item p{
+    font-size:13px;
+    font-weight:600;
+    color:var(--muted);
+    line-height:1.55;
+    margin:10px 0 0;
   }
 
   /* in-app chat */
@@ -1269,6 +1336,47 @@
   <div id="glossaryEmpty" class="events-status" style="display:none;">No terms match your search.</div>
 </div>
 
+<div class="wrap tab-panel" id="tab-faq">
+  <div class="eyebrow">Good To Know</div>
+  <h1>Frequently Asked Questions</h1>
+  <div class="sub">The honest answers, no fine print.</div>
+
+  <div class="faq-list">
+    <details class="faq-item">
+      <summary>Why does this app matter?</summary>
+      <p>Transition is scattered across a dozen offices, forms, and deadlines that nobody hands you as a single checklist. This app exists to put the whole process — from a year out to years after — in one place, so nothing important gets missed simply because no one mentioned it in time.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Who benefits from this?</summary>
+      <p>Anyone transitioning out of the military, at any stage — whether you're a year from separation or years past it. It's built to work for every branch, and useful whether you're just starting to think about TAP or you're already using the GI Bill or a VA home loan.</p>
+    </details>
+    <details class="faq-item">
+      <summary>When can I start using this app?</summary>
+      <p>Right away, at any point in your timeline. Earlier is better — some of the checklist items (like SkillBridge paperwork) have real deadlines — but the Education, Home Buying, Documents, and Glossary tabs stay useful for years after you separate.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Will this app keep my data private?</summary>
+      <p>By default, everything — your checklist progress, your EAS date, your branch — stays only on your device and never leaves it. If you choose to sign in for cross-device sync, that same information is stored in your own private account, visible only to you. Nothing you enter is shared publicly or with anyone else using the app.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Is this an official DoD or VA app?</summary>
+      <p>No — this is an independent, unofficial resource. It links directly to official sources (va.gov, dol.gov, and others) wherever possible, but always confirm dates, eligibility, and requirements with the VA or your installation before acting on anything here.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Do I need to create an account?</summary>
+      <p>No. The whole app works fully without signing in. An account is only needed if you want your checklist progress to follow you across multiple devices.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Does this app cost anything?</summary>
+      <p>No, it's free to use.</p>
+    </details>
+    <details class="faq-item">
+      <summary>What if I find something inaccurate or out of date?</summary>
+      <p>Benefits, forms, and rules change. This app is meant as a starting point and a memory aid, not a final authority — always double-check anything time-sensitive or financial directly with the VA, your installation, or the linked official source before relying on it.</p>
+    </details>
+  </div>
+</div>
+
 <div class="wrap tab-panel" id="tab-education">
   <div class="eyebrow">Education &amp; Training</div>
   <h1>Your Benefit Path</h1>
@@ -1313,6 +1421,45 @@
   <button class="got-it" id="eduGotIt">Got it!</button>
 </div>
 
+<div class="wrap tab-panel" id="tab-homebuying">
+  <div class="eyebrow">VA Home Loan</div>
+  <h1>Buying a Home</h1>
+  <div class="sub">The full VA-backed purchase process, start to close. Tap a stop for what to do and what to expect.</div>
+
+  <div class="progress" id="homeProgress">
+    <div class="progress-label" id="homeProgressLabel">0 of 8 explored</div>
+  </div>
+
+  <div class="path-container" id="homePathContainer">
+    <svg id="homePathSvg" preserveAspectRatio="none" role="img" aria-label="VA home loan timeline"></svg>
+  </div>
+
+  <footer>
+    Informational reference only, not official guidance. Confirm current eligibility, rates, and requirements with the VA and your lender before acting.
+  </footer>
+</div>
+
+<div class="backdrop" id="homeBackdrop"></div>
+<div class="sheet" id="homeSheet">
+  <div class="sheet-top" id="homeSheetTop">
+    <button class="sheet-close" id="homeSheetClose" aria-label="Close">✕</button>
+    <span class="sheet-icon" id="homeSheetIcon"></span>
+    <div class="sheet-t" id="homeSheetT"></div>
+    <div class="sheet-title" id="homeSheetTitle"></div>
+    <div class="sheet-blurb" id="homeSheetBlurb"></div>
+  </div>
+  <div class="sheet-body">
+    <div class="section-label must-label">Must do</div>
+    <div id="homeChecklistMust"></div>
+    <div class="done-msg" id="homeDoneMsg"></div>
+    <div class="section-label rec-label">Recommended</div>
+    <div id="homeChecklistRec"></div>
+    <div class="section-label">Resources</div>
+    <div class="link-row" id="homeLinkRow"></div>
+  </div>
+  <button class="got-it" id="homeGotIt">Got it!</button>
+</div>
+
 <nav class="tabbar" id="tabbar" role="tablist" aria-label="Main sections">
   <button class="tab-btn active" data-tab="tab-path" id="tabBtnPath" role="tab" aria-selected="true">
     <span class="tab-icon" aria-hidden="true">🗺️</span>
@@ -1326,6 +1473,10 @@
     <span class="tab-icon" aria-hidden="true">🎓</span>
     <span class="tab-label">Education</span>
   </button>
+  <button class="tab-btn" data-tab="tab-homebuying" id="tabBtnHomeBuying" role="tab" aria-selected="false">
+    <span class="tab-icon" aria-hidden="true">🏠</span>
+    <span class="tab-label">Housing</span>
+  </button>
   <button class="tab-btn" data-tab="tab-documents" id="tabBtnDocuments" role="tab" aria-selected="false">
     <span class="tab-icon" aria-hidden="true">📄</span>
     <span class="tab-label">Docs</span>
@@ -1333,6 +1484,10 @@
   <button class="tab-btn" data-tab="tab-glossary" id="tabBtnGlossary" role="tab" aria-selected="false">
     <span class="tab-icon" aria-hidden="true">📖</span>
     <span class="tab-label">Glossary</span>
+  </button>
+  <button class="tab-btn" data-tab="tab-faq" id="tabBtnFaq" role="tab" aria-selected="false">
+    <span class="tab-icon" aria-hidden="true">❓</span>
+    <span class="tab-label">FAQ</span>
   </button>
 </nav>
 
@@ -1403,7 +1558,7 @@ const EDU_TRACKS = {
   gibill: {
     label: "Post-9/11 GI Bill",
     stops: [
-      { icon: "🔍", color: "var(--olive)", sh: "var(--olive-sh)", title: "Check Eligibility",
+      { icon: "🔍", color: "var(--navy1)", sh: "var(--navy1-sh)", title: "Check Eligibility",
         blurb: "Post-9/11 GI Bill eligibility is based on your aggregate active-duty time after September 10, 2001.",
         must: [
           "Confirm at least 90 aggregate days of active duty after 9/10/2001 (or a qualifying disability discharge after 30 days)",
@@ -1419,7 +1574,7 @@ const EDU_TRACKS = {
         ],
         links: [["GI Bill overview","https://www.va.gov/education/about-gi-bill-benefits/"],["GI Bill Comparison Tool","https://www.va.gov/education/gi-bill-comparison-tool/"],["TAP overview","https://www.dol.gov/agencies/vets/tap"]]
       },
-      { icon: "📜", color: "var(--khaki)", sh: "var(--khaki-sh)", title: "Get Your COE",
+      { icon: "📜", color: "var(--navy2)", sh: "var(--navy2-sh)", title: "Get Your COE",
         blurb: "Your Certificate of Eligibility is what proves your benefit to any school you attend.",
         must: [
           "Submit VA Form 22-1990 to apply for benefits",
@@ -1435,7 +1590,7 @@ const EDU_TRACKS = {
         ],
         links: [["Apply for education benefits","https://www.va.gov/education/how-to-apply/"],["VA.gov sign-in","https://www.va.gov/sign-in/"]]
       },
-      { icon: "🏫", color: "var(--stblue)", sh: "var(--stblue-sh)", title: "Choose Your School",
+      { icon: "🏫", color: "var(--navy1)", sh: "var(--navy1-sh)", title: "Choose Your School",
         blurb: "Not every program pays out the same — compare before you commit.",
         must: [
           "Confirm your school or program is VA-approved",
@@ -1451,7 +1606,7 @@ const EDU_TRACKS = {
         ],
         links: [["GI Bill Comparison Tool","https://www.va.gov/education/gi-bill-comparison-tool/"]]
       },
-      { icon: "✍️", color: "var(--oldglory)", sh: "var(--oldglory-sh)", big: true, title: "Certify Enrollment",
+      { icon: "✍️", color: "var(--navy3)", sh: "var(--navy3-sh)", big: true, title: "Certify Enrollment",
         blurb: "Nothing pays out until your school certifies you're actually enrolled.",
         must: [
           "Find your school's certifying official (SCO)",
@@ -1467,7 +1622,7 @@ const EDU_TRACKS = {
         ],
         links: [["Apply for education benefits","https://www.va.gov/education/how-to-apply/"],["VA.gov sign-in","https://www.va.gov/sign-in/"]]
       },
-      { icon: "💰", color: "var(--navy)", sh: "var(--navy-sh)", title: "Manage Your Benefit",
+      { icon: "💰", color: "var(--navy2)", sh: "var(--navy2-sh)", title: "Manage Your Benefit",
         blurb: "Payments, credit hours, and entitlement — this is the maintenance phase.",
         must: [
           "Track your Monthly Housing Allowance (MHA) payments",
@@ -1483,7 +1638,7 @@ const EDU_TRACKS = {
         ],
         links: [["GI Bill Comparison Tool","https://www.va.gov/education/gi-bill-comparison-tool/"],["VA.gov sign-in","https://www.va.gov/sign-in/"]]
       },
-      { icon: "🎓", color: "var(--gold)", sh: "var(--gold-sh)", big: true, title: "Finish Strong",
+      { icon: "🎓", color: "var(--navy3)", sh: "var(--navy3-sh)", big: true, title: "Finish Strong",
         blurb: "The finish line — and the start of whatever's next.",
         must: [
           "Confirm your final term is certified correctly",
@@ -1504,7 +1659,7 @@ const EDU_TRACKS = {
   vre: {
     label: "VR&E (Chapter 31)",
     stops: [
-      { icon: "🔍", color: "var(--olive)", sh: "var(--olive-sh)", title: "Check Eligibility",
+      { icon: "🔍", color: "var(--navy1)", sh: "var(--navy1-sh)", title: "Check Eligibility",
         blurb: "VR&E is built around employability, for veterans whose service-connected disability affects their ability to work.",
         must: [
           "Confirm you have a service-connected disability rating with an employment handicap (criteria vary by rating)",
@@ -1520,7 +1675,7 @@ const EDU_TRACKS = {
         ],
         links: [["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"],["VA disability claims","https://www.va.gov/disability/how-to-file-claim/"]]
       },
-      { icon: "📝", color: "var(--khaki)", sh: "var(--khaki-sh)", title: "Apply (VA Form 28-1900)",
+      { icon: "📝", color: "var(--navy2)", sh: "var(--navy2-sh)", title: "Apply (VA Form 28-1900)",
         blurb: "This is the actual application that starts your VR&E case.",
         must: [
           "Submit VA Form 28-1900, Disabled Veterans Application for Vocational Rehabilitation",
@@ -1536,7 +1691,7 @@ const EDU_TRACKS = {
         ],
         links: [["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"]]
       },
-      { icon: "🗣️", color: "var(--stblue)", sh: "var(--stblue-sh)", title: "Entrance Evaluation",
+      { icon: "🗣️", color: "var(--navy1)", sh: "var(--navy1-sh)", title: "Entrance Evaluation",
         blurb: "You'll meet with a Vocational Rehabilitation Counselor (VRC) to talk through your goals.",
         must: [
           "Attend your scheduled entrance evaluation appointment",
@@ -1552,7 +1707,7 @@ const EDU_TRACKS = {
         ],
         links: [["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"]]
       },
-      { icon: "📋", color: "var(--oldglory)", sh: "var(--oldglory-sh)", big: true, title: "Build Your Plan (IWRP)",
+      { icon: "📋", color: "var(--navy3)", sh: "var(--navy3-sh)", big: true, title: "Build Your Plan (IWRP)",
         blurb: "Your Individualized Written Rehabilitation Plan is the roadmap for your entire case.",
         must: [
           "Work with your VRC to finalize your Individualized Written Rehabilitation Plan (IWRP)",
@@ -1568,7 +1723,7 @@ const EDU_TRACKS = {
         ],
         links: [["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"]]
       },
-      { icon: "📚", color: "var(--navy)", sh: "var(--navy-sh)", title: "Begin Your Program",
+      { icon: "📚", color: "var(--navy2)", sh: "var(--navy2-sh)", title: "Begin Your Program",
         blurb: "Whatever your track, this is where the real work — training, school, or job search — begins.",
         must: [
           "Start your approved training, education, or employment services",
@@ -1584,7 +1739,7 @@ const EDU_TRACKS = {
         ],
         links: [["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"]]
       },
-      { icon: "🏁", color: "var(--gold)", sh: "var(--gold-sh)", big: true, title: "Complete & Transition",
+      { icon: "🏁", color: "var(--navy3)", sh: "var(--navy3-sh)", big: true, title: "Complete & Transition",
         blurb: "Finishing your program is the goal — job placement support is part of the deal too.",
         must: [
           "Complete your training, education, or employment milestones",
@@ -1805,8 +1960,324 @@ function initEducationTab() {
   buildEduPath();
 }
 
+/* ---------------- Home Buying (VA Loan) Path ---------------- */
+
+const HOME_STOPS = [
+  { icon: "🔍", color: "var(--blue1)", sh: "var(--blue1-sh)", title: "Check Eligibility",
+    blurb: "VA loans have their own service requirements, separate from other VA benefits.",
+    must: [
+      "Confirm your service meets VA loan requirements (90 days active duty wartime, 181 days peacetime, or 6 years National Guard/Reserve)",
+      "Check if you qualify as an unremarried surviving spouse of a service member who died in the line of duty",
+      "Understand VA loans typically require no down payment",
+      "Understand VA loans don't require private mortgage insurance (PMI)",
+      "Confirm whether you've used VA loan entitlement before and how much you have left"
+    ],
+    recommended: [
+      "Read up on the VA funding fee and whether you're exempt (a service-connected disability rating usually exempts you)",
+      "Compare a VA loan against conventional or FHA options for your situation",
+      "Ask a VSO if you have questions about your specific eligibility"
+    ],
+    links: [["VA home loan eligibility","https://www.va.gov/housing-assistance/home-loans/eligibility/"]]
+  },
+  { icon: "📜", color: "var(--blue2)", sh: "var(--blue2-sh)", title: "Get Your COE",
+    blurb: "Your Certificate of Eligibility proves your VA loan benefit to any lender.",
+    must: [
+      "Request your COE through VA.gov, your lender, or by mail",
+      "Confirm your entitlement amount listed on the COE",
+      "Keep a copy ready for your lender",
+      "Note whether you have full or reduced entitlement if you've used a VA loan before",
+      "Check whether a previous VA loan needs to be paid off or restored before reusing entitlement"
+    ],
+    recommended: [
+      "Ask your lender to help pull your COE — many can do this instantly",
+      "Keep your DD214 handy in case it's needed to verify service",
+      "Save the COE alongside your other transition documents"
+    ],
+    links: [["Request your COE","https://www.va.gov/housing-assistance/home-loans/how-to-request-coe/"]]
+  },
+  { icon: "💳", color: "var(--blue1)", sh: "var(--blue1-sh)", title: "Check Your Finances",
+    blurb: "VA sets no minimum credit score, but lenders do — know where you stand before you shop.",
+    must: [
+      "Pull your credit report and check for errors",
+      "Ask lenders about their minimum credit score requirement (commonly around 620, but it varies)",
+      "Calculate your debt-to-income ratio",
+      "Build a realistic monthly budget including estimated mortgage, taxes, and insurance",
+      "Save for closing costs — a VA loan reduces but doesn't eliminate all upfront costs"
+    ],
+    recommended: [
+      "Avoid opening new credit or making large purchases before closing",
+      "Pay down high-interest debt if you can before applying",
+      "Consider a financial counselor through Military OneSource"
+    ],
+    links: [["VA home loans overview","https://www.va.gov/housing-assistance/home-loans/"]]
+  },
+  { icon: "✅", color: "var(--blue3)", sh: "var(--blue3-sh)", big: true, title: "Get Pre-Approved",
+    blurb: "Pre-approval tells you — and sellers — what you can actually afford.",
+    must: [
+      "Find a VA-approved lender",
+      "Submit income, asset, and credit documentation",
+      "Get a written pre-approval letter with your loan amount",
+      "Confirm your estimated interest rate and monthly payment",
+      "Ask about your VA funding fee amount for this loan"
+    ],
+    recommended: [
+      "Get quotes from more than one lender to compare rates",
+      "Ask how long your pre-approval is valid and about rate locks",
+      "Clarify closing cost estimates upfront"
+    ],
+    links: [["VA home loans overview","https://www.va.gov/housing-assistance/home-loans/"]]
+  },
+  { icon: "🏡", color: "var(--blue2)", sh: "var(--blue2-sh)", title: "House Hunting",
+    blurb: "Shop within your pre-approval, ideally with an agent who knows VA loans.",
+    must: [
+      "Find a real estate agent, ideally one experienced with VA transactions",
+      "Search within your pre-approved budget",
+      "Confirm the home qualifies for a VA loan (must be your primary residence)",
+      "Understand VA Minimum Property Requirements homes must meet",
+      "Track homes you're interested in and their asking prices"
+    ],
+    recommended: [
+      "Weigh commute, schools, and resale value, not just price",
+      "Plan for a private home inspection even though VA doesn't require one",
+      "Ask your agent about typical closing costs in your area"
+    ],
+    links: [["VA home loans overview","https://www.va.gov/housing-assistance/home-loans/"]]
+  },
+  { icon: "📝", color: "var(--blue1)", sh: "var(--blue1-sh)", title: "Make an Offer",
+    blurb: "VA purchase contracts have a few protections worth knowing before you sign.",
+    must: [
+      "Submit your offer through your agent",
+      "Include the VA Escape Clause / Amendment to Contract, which protects you if the appraisal comes in low",
+      "Negotiate any seller concessions toward closing costs",
+      "Confirm your offer timeline fits within your pre-approval's validity",
+      "Review the full purchase agreement before signing"
+    ],
+    recommended: [
+      "Ask about a home warranty as part of negotiations",
+      "Clarify what happens to your earnest money if the deal falls through",
+      "Update your lender as soon as your offer is accepted"
+    ],
+    links: [["VA home loans overview","https://www.va.gov/housing-assistance/home-loans/"]]
+  },
+  { icon: "🔎", color: "var(--blue2)", sh: "var(--blue2-sh)", title: "Appraisal & Inspection",
+    blurb: "The VA appraisal checks minimum standards — it's not a substitute for your own inspection.",
+    must: [
+      "Schedule the VA-required appraisal (arranged by your lender)",
+      "Confirm the home meets VA Minimum Property Requirements",
+      "Hire an independent home inspector — VA doesn't require this, but skipping it is risky",
+      "Review the inspection report for major issues",
+      "Negotiate repairs or a price adjustment if problems come up"
+    ],
+    recommended: [
+      "Attend the inspection in person if you can",
+      "Ask about a pest or termite inspection if common in your area",
+      "Keep documentation of any agreed-upon repairs"
+    ],
+    links: [["VA home loans overview","https://www.va.gov/housing-assistance/home-loans/"]]
+  },
+  { icon: "🔑", color: "var(--blue3)", sh: "var(--blue3-sh)", big: true, title: "Closing Day",
+    blurb: "The finish line — sign the paperwork and get your keys.",
+    must: [
+      "Review your Closing Disclosure at least 3 days before closing",
+      "Confirm your VA funding fee amount, or your exemption if disability-rated",
+      "Do a final walkthrough of the home before closing",
+      "Bring required ID and any funds due at closing",
+      "Sign your closing documents and get your keys"
+    ],
+    recommended: [
+      "Set up your mortgage payment and escrow account right after closing",
+      "Look into state property tax exemptions for veterans, especially if disabled",
+      "Save all closing documents somewhere safe for taxes and any future refinance"
+    ],
+    links: [["VA home loans overview","https://www.va.gov/housing-assistance/home-loans/"]]
+  }
+];
+
+let homeVisited = new Set();
+let homeCheckedState = HOME_STOPS.map(s => ({ must: s.must.map(() => false), recommended: s.recommended.map(() => false) }));
+let homeInitialized = false;
+let homeCurrentIdx = null;
+
+const homeXPercents = [50, 75, 15, 68, 25, 72, 20, 50];
+const homeYStep = 132;
+const homeYStart = 46;
+
+function buildHomePath() {
+  const container = document.getElementById('homePathContainer');
+  const svg = document.getElementById('homePathSvg');
+  container.innerHTML = '';
+  container.appendChild(svg);
+  svg.innerHTML = '';
+
+  const totalHeight = homeYStart + (HOME_STOPS.length - 1) * homeYStep + 70;
+  container.style.height = totalHeight + 'px';
+  svg.setAttribute('viewBox', `0 0 100 ${totalHeight}`);
+
+  const points = HOME_STOPS.map((s, i) => ({ x: homeXPercents[i], y: homeYStart + i * homeYStep }));
+
+  let pathD = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i++) pathD += ` L ${points[i].x} ${points[i].y}`;
+  const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  pathEl.setAttribute('d', pathD);
+  pathEl.setAttribute('fill', 'none');
+  pathEl.setAttribute('stroke', '#E4DFEE');
+  pathEl.setAttribute('stroke-width', '5');
+  pathEl.setAttribute('stroke-linecap', 'round');
+  pathEl.setAttribute('stroke-linejoin', 'round');
+  pathEl.setAttribute('stroke-dasharray', '1 11');
+  pathEl.setAttribute('vector-effect', 'non-scaling-stroke');
+  svg.appendChild(pathEl);
+
+  HOME_STOPS.forEach((s, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'node-wrap';
+    wrap.style.left = points[i].x + '%';
+    wrap.style.top = points[i].y + 'px';
+    wrap.innerHTML = `
+      <button class="node-btn ${s.big ? 'big' : ''}" id="homenodebtn-${i}" data-idx="${i}"
+        aria-label="Step ${i + 1} — ${s.title}. Tap to see checklist."
+        style="background:${s.color}; box-shadow:0 5px 0 ${s.sh}; color:${s.color};">
+        ${s.icon}
+      </button>
+      <div class="node-label">
+        <div class="node-t">Step ${i + 1}</div>
+        <div class="node-title">${s.title}</div>
+      </div>
+    `;
+    container.appendChild(wrap);
+    if (s.big) document.getElementById(`homenodebtn-${i}`).classList.add('node-pulse');
+    if (homeVisited.has(i)) addHomeVisitedBadge(i);
+  });
+
+  updateHomeProgress();
+}
+
+function addHomeVisitedBadge(idx) {
+  const host = document.getElementById(`homenodebtn-${idx}`);
+  if (host && !host.querySelector('.node-badge')) {
+    const badge = document.createElement('span');
+    badge.className = 'node-badge';
+    badge.textContent = '✓';
+    host.appendChild(badge);
+  }
+}
+
+function updateHomeProgress() {
+  const prog = document.getElementById('homeProgress');
+  const label = document.getElementById('homeProgressLabel');
+  label.textContent = `${homeVisited.size} of ${HOME_STOPS.length} explored`;
+  prog.querySelectorAll('.pip').forEach(p => p.remove());
+  HOME_STOPS.forEach((s, i) => {
+    const pip = document.createElement('div');
+    pip.className = 'pip' + (homeVisited.has(i) ? ' on' : '');
+    if (homeVisited.has(i)) {
+      pip.style.background = getComputedStyle(document.documentElement)
+        .getPropertyValue(s.color.replace('var(', '').replace(')', '')) || s.color;
+    }
+    prog.insertBefore(pip, label);
+  });
+}
+
+function renderHomeChecklist(idx) {
+  const s = HOME_STOPS[idx];
+  const mustEl = document.getElementById('homeChecklistMust');
+  const recEl = document.getElementById('homeChecklistRec');
+  mustEl.innerHTML = '';
+  recEl.innerHTML = '';
+
+  s.must.forEach((item, ci) => mustEl.appendChild(buildHomeChip(idx, 'must', ci, item)));
+  s.recommended.forEach((item, ci) => recEl.appendChild(buildHomeChip(idx, 'recommended', ci, item)));
+
+  const state = homeCheckedState[idx];
+  const mustDone = state.must.every(Boolean);
+  const recDone = state.recommended.every(Boolean);
+  const doneMsg = document.getElementById('homeDoneMsg');
+  if (mustDone && recDone) {
+    doneMsg.textContent = '🌟 Every item done.';
+    doneMsg.classList.add('show');
+  } else if (mustDone) {
+    doneMsg.textContent = '✅ Must-dos handled. Nice work.';
+    doneMsg.classList.add('show');
+  } else {
+    doneMsg.classList.remove('show');
+  }
+}
+
+function buildHomeChip(idx, kind, ci, item) {
+  const chip = document.createElement('button');
+  const isChecked = homeCheckedState[idx][kind][ci];
+  chip.className = 'chip' + (kind === 'recommended' ? ' recommended' : '') + (isChecked ? ' checked' : '');
+  chip.innerHTML = `<span class="box">${isChecked ? '✓' : ''}</span><span class="txt">${item}</span>`;
+  chip.addEventListener('click', () => {
+    homeCheckedState[idx][kind][ci] = !homeCheckedState[idx][kind][ci];
+    renderHomeChecklist(idx);
+    saveProgress();
+  });
+  return chip;
+}
+
+function openHomeSheet(idx) {
+  homeCurrentIdx = idx;
+  const s = HOME_STOPS[idx];
+
+  document.getElementById('homeSheetTop').style.background = s.color;
+  document.getElementById('homeSheetIcon').textContent = s.icon;
+  document.getElementById('homeSheetT').textContent = `Step ${idx + 1}`;
+  document.getElementById('homeSheetTitle').textContent = s.title;
+  document.getElementById('homeSheetBlurb').textContent = s.blurb;
+
+  renderHomeChecklist(idx);
+
+  const linkRow = document.getElementById('homeLinkRow');
+  linkRow.innerHTML = '';
+  s.links.forEach(([label, url]) => {
+    const a = document.createElement('a');
+    a.className = 'link-pill';
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.style.background = s.sh;
+    a.textContent = label;
+    linkRow.appendChild(a);
+  });
+
+  const gotIt = document.getElementById('homeGotIt');
+  gotIt.style.background = s.color;
+  gotIt.style.boxShadow = `0 5px 0 ${s.sh}`;
+
+  homeVisited.add(idx);
+  addHomeVisitedBadge(idx);
+  updateHomeProgress();
+  saveProgress();
+
+  document.getElementById('homeBackdrop').classList.add('show');
+  document.getElementById('homeSheet').classList.add('show');
+}
+
+function closeHomeSheet() {
+  document.getElementById('homeBackdrop').classList.remove('show');
+  document.getElementById('homeSheet').classList.remove('show');
+}
+
+function initHomeBuyingTab() {
+  if (homeInitialized) return;
+  homeInitialized = true;
+
+  document.getElementById('homePathContainer').addEventListener('click', (e) => {
+    const btn = e.target.closest('.node-btn');
+    if (!btn) return;
+    openHomeSheet(parseInt(btn.getAttribute('data-idx')));
+  });
+
+  document.getElementById('homeBackdrop').addEventListener('click', closeHomeSheet);
+  document.getElementById('homeSheetClose').addEventListener('click', closeHomeSheet);
+  document.getElementById('homeGotIt').addEventListener('click', closeHomeSheet);
+
+  buildHomePath();
+}
+
 const stops = [
-  { t:"T-365", days:365, title:"Early Recon", icon:"🔭", color:"var(--slate)", sh:"var(--slate-sh)",
+  { t:"T-365", days:365, title:"Early Recon", icon:"🔭", color:"var(--navy1)", sh:"var(--navy1-sh)",
     blurb:"One year out. Nothing's due yet, but a few early moves make everything after this easier.",
     must:[
       "Confirm your exact EAS/separation date with your admin",
@@ -1822,7 +2293,7 @@ const stops = [
     ],
     links:[["TAP overview","https://www.dol.gov/agencies/vets/tap"],["SkillBridge","https://skillbridge.osd.mil/"],["GI Bill","https://www.va.gov/education/about-gi-bill-benefits/"]]
   },
-  { t:"T-180", days:180, title:"SkillBridge Deadline", icon:"📝", color:"var(--alert)", sh:"var(--alert-sh)", big:true,
+  { t:"T-180", days:180, title:"SkillBridge Deadline", icon:"📝", color:"var(--red1)", sh:"var(--red1-sh)", big:true,
     blurb:"Six months out. This is a hard deadline for Marines — SkillBridge paperwork is due now, and TAP is no longer optional.",
     must:[
       "Submit SkillBridge paperwork — required 6 months before EAS per USMC order",
@@ -1838,7 +2309,7 @@ const stops = [
     ],
     links:[["SkillBridge","https://skillbridge.osd.mil/"],["TAP overview","https://www.dol.gov/agencies/vets/tap"],["VA pre-discharge claims","https://www.benefits.va.gov/predischarge/"]]
   },
-  { t:"T-90", days:90, title:"Final Systems Check", icon:"🧭", color:"var(--olive)", sh:"var(--olive-sh)",
+  { t:"T-90", days:90, title:"Final Systems Check", icon:"🧭", color:"var(--blue2)", sh:"var(--blue2-sh)",
     blurb:"Three months out. Get paperwork moving before it gets expensive to fix.",
     must:[
       "Sign off Career Readiness Standards (TAP/GPS)",
@@ -1854,7 +2325,7 @@ const stops = [
     ],
     links:[["VA pre-discharge claims","https://www.benefits.va.gov/predischarge/"],["SkillBridge","https://skillbridge.osd.mil/"],["TAP overview","https://www.dol.gov/agencies/vets/tap"]]
   },
-  { t:"T-60", days:60, title:"Out-Processing Push", icon:"📋", color:"var(--khaki)", sh:"var(--khaki-sh)",
+  { t:"T-60", days:60, title:"Out-Processing Push", icon:"📋", color:"var(--blue1)", sh:"var(--blue1-sh)",
     blurb:"Two months out. Installation clearing eats your calendar — beat it to the punch.",
     must:[
       "Complete final medical & dental exams",
@@ -1870,7 +2341,7 @@ const stops = [
     ],
     links:[["VA health care","https://www.va.gov/health-care/how-to-apply/"],["USAJobs veterans","https://www.usajobs.gov/Veterans"],["Moving & PCS","https://www.militaryonesource.mil/moving-housing/"]]
   },
-  { t:"T-30", days:30, title:"Final Appointments", icon:"🎒", color:"var(--stblue)", sh:"var(--stblue-sh)",
+  { t:"T-30", days:30, title:"Final Appointments", icon:"🎒", color:"var(--navy2)", sh:"var(--navy2-sh)",
     blurb:"One month out. Close every loop — nothing's easier to fix once you're gone.",
     must:[
       "Verify your DD214 will be accurate",
@@ -1886,7 +2357,7 @@ const stops = [
     ],
     links:[["VA.gov sign-in","https://www.va.gov/sign-in/"],["Get your DD214","https://www.va.gov/records/get-military-service-records/"]]
   },
-  { t:"T-0", days:0, title:"Separation Day", icon:"🎖️", color:"var(--oldglory)", sh:"var(--oldglory-sh)", big:true,
+  { t:"T-0", days:0, title:"Separation Day", icon:"🎖️", color:"var(--red2)", sh:"var(--red2-sh)", big:true,
     blurb:"This is the line. What you activate now decides how fast benefits kick in.",
     must:[
       "Check your DD214 line by line",
@@ -1902,7 +2373,7 @@ const stops = [
     ],
     links:[["VGLI conversion","https://www.va.gov/life-insurance/options-eligibility/vgli/"],["Veteran ID card","https://www.va.gov/records/get-veteran-id-cards/"],["UCX unemployment","https://www.dol.gov/agencies/vets/programs/ucx"]]
   },
-  { t:"6 MO", days:-182, title:"First Reassessment", icon:"🌱", color:"var(--navy)", sh:"var(--navy-sh)",
+  { t:"6 MO", days:-182, title:"First Reassessment", icon:"🌱", color:"var(--navy3)", sh:"var(--navy3-sh)",
     blurb:"Six months in. The adrenaline's worn off — check what's actually working.",
     must:[
       "Follow up on your VA claim status",
@@ -1918,7 +2389,7 @@ const stops = [
     ],
     links:[["Vet Centers","https://www.vetcenter.va.gov/"],["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"],["GI Bill","https://www.va.gov/education/about-gi-bill-benefits/"]]
   },
-  { t:"1 YR", days:-365, title:"One Year Mark", icon:"🛡️", color:"var(--bronze)", sh:"var(--bronze-sh)",
+  { t:"1 YR", days:-365, title:"One Year Mark", icon:"🛡️", color:"var(--burg1)", sh:"var(--burg1-sh)",
     blurb:"A full year out. A few deadlines quietly expire — worth a deliberate check.",
     must:[
       "Verify your VGLI conversion deadline",
@@ -1934,7 +2405,7 @@ const stops = [
     ],
     links:[["VA decision reviews","https://www.va.gov/decision-reviews/"],["Veterans Business Outreach Centers","https://www.sba.gov/local-assistance/resource-partners/veterans-business-outreach-center-vboc-program"]]
   },
-  { t:"2+ YR", days:-730, title:"Long-Term Standing", icon:"🏆", color:"var(--gold)", sh:"var(--gold-sh)", big:true,
+  { t:"2+ YR", days:-730, title:"Long-Term Standing", icon:"🏆", color:"var(--burg3)", sh:"var(--burg3-sh)", big:true,
     blurb:"Two years and beyond. Now it's maintenance and growth, not urgency.",
     must:[
       "File a claim increase if a condition's worsened",
@@ -2076,13 +2547,27 @@ function applyEduData(data){
     });
     buildEduPath();
   }
+
+  const savedHomeVisited = Array.isArray(data.homeVisited) ? data.homeVisited : [];
+  homeVisited = new Set(savedHomeVisited);
+  const savedHomeChecked = Array.isArray(data.homeChecked) ? data.homeChecked : null;
+  homeCheckedState = HOME_STOPS.map((s, idx) => {
+    const saved = savedHomeChecked && savedHomeChecked[idx];
+    return {
+      must: s.must.map((_, ci) => (saved && Array.isArray(saved.must) && typeof saved.must[ci] === 'boolean') ? saved.must[ci] : false),
+      recommended: s.recommended.map((_, ci) => (saved && Array.isArray(saved.recommended) && typeof saved.recommended[ci] === 'boolean') ? saved.recommended[ci] : false)
+    };
+  });
+  if (homeInitialized) buildHomePath();
 }
 
 function buildEduPayload(){
   return {
     eduTrack,
     eduVisited: { gibill: Array.from(eduVisited.gibill), vre: Array.from(eduVisited.vre) },
-    eduChecked: eduCheckedState
+    eduChecked: eduCheckedState,
+    homeVisited: Array.from(homeVisited),
+    homeChecked: homeCheckedState
   };
 }
 
@@ -2415,6 +2900,23 @@ let eventsTabInitialized = false;
 let glossaryTabInitialized = false;
 let documentsTabInitialized = false;
 
+const TAB_ACCENTS = {
+  'tab-path': ['var(--red2)', 'var(--red2-sh)'],
+  'tab-events': ['var(--blue2)', 'var(--blue2-sh)'],
+  'tab-education': ['var(--navy2)', 'var(--navy2-sh)'],
+  'tab-homebuying': ['var(--blue1)', 'var(--blue1-sh)'],
+  'tab-documents': ['var(--burg2)', 'var(--burg2-sh)'],
+  'tab-glossary': ['var(--burg1)', 'var(--burg1-sh)'],
+  'tab-faq': ['var(--navy1)', 'var(--navy1-sh)']
+};
+
+function applyTabAccent(target){
+  const accent = TAB_ACCENTS[target];
+  if (!accent) return;
+  document.documentElement.style.setProperty('--tab-accent', accent[0]);
+  document.documentElement.style.setProperty('--tab-accent-sh', accent[1]);
+}
+
 tabButtons.forEach(btn => {
   btn.addEventListener('click', () => {
     const target = btn.getAttribute('data-tab');
@@ -2426,6 +2928,7 @@ tabButtons.forEach(btn => {
       b.setAttribute('aria-selected', String(isActive));
     });
     window.scrollTo(0, 0);
+    applyTabAccent(target);
     if (target === 'tab-events' && !eventsTabInitialized) {
       eventsTabInitialized = true;
       initEventsTab();
@@ -2441,17 +2944,20 @@ tabButtons.forEach(btn => {
     if (target === 'tab-education') {
       initEducationTab();
     }
+    if (target === 'tab-homebuying') {
+      initHomeBuyingTab();
+    }
   });
 });
 
 /* ---------------- Local Events & Posts ---------------- */
 
 const ORG_TYPES = [
-  { key: 'vfw', label: 'VFW Post', icon: '🎖️', color: 'var(--oldglory)', regex: /\b(VFW|Veterans of Foreign Wars)\b/i },
-  { key: 'legion', label: 'American Legion', icon: '⭐', color: 'var(--stblue)', regex: /American Legion/i },
-  { key: 'dav', label: 'DAV Chapter', icon: '🛡️', color: 'var(--bronze)', regex: /\b(DAV|Disabled American Veterans)\b/i },
-  { key: 'vetcenter', label: 'Vet Center', icon: '🌱', color: 'var(--olive)', regex: /Vet Center/i },
-  { key: 'va', label: 'VA Facility', icon: '🏥', color: 'var(--navy)', regex: /(VA Medical Center|Veterans Affairs|VA Clinic|VA Hospital)/i }
+  { key: 'vfw', label: 'VFW Post', icon: '🎖️', color: 'var(--blue3)', regex: /\b(VFW|Veterans of Foreign Wars)\b/i },
+  { key: 'legion', label: 'American Legion', icon: '⭐', color: 'var(--blue2)', regex: /American Legion/i },
+  { key: 'dav', label: 'DAV Chapter', icon: '🛡️', color: 'var(--blue1)', regex: /\b(DAV|Disabled American Veterans)\b/i },
+  { key: 'vetcenter', label: 'Vet Center', icon: '🌱', color: 'var(--blue3)', regex: /Vet Center/i },
+  { key: 'va', label: 'VA Facility', icon: '🏥', color: 'var(--blue2)', regex: /(VA Medical Center|Veterans Affairs|VA Clinic|VA Hospital)/i }
 ];
 
 function classifyOrg(name) {
@@ -2541,7 +3047,7 @@ function renderFallbackLinks(zip, city, state) {
     a.href = url;
     a.target = '_blank';
     a.rel = 'noopener';
-    a.style.background = 'var(--navy)';
+    a.style.background = 'var(--blue3)';
     a.textContent = label;
     row.appendChild(a);
   });
@@ -3108,7 +3614,7 @@ function buildDocumentItem(d) {
     <div class="glossary-def"><strong>When it matters:</strong> ${d.when}</div>
     ${tagsHtml ? `<div class="glossary-tags">${tagsHtml}</div>` : ''}
     <div class="link-row" style="margin-top:8px; margin-bottom:0;">
-      <a class="link-pill" style="background:var(--navy);" href="${d.link}" target="_blank" rel="noopener">${d.linkLabel}</a>
+      <a class="link-pill" style="background:var(--burg2);" href="${d.link}" target="_blank" rel="noopener">${d.linkLabel}</a>
     </div>
   `;
   item.querySelectorAll('.glossary-tag').forEach(btn => {
