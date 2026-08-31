@@ -166,6 +166,13 @@
     line-height:1.25;
     margin-top:1px;
   }
+  .node-date{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:9px;
+    font-weight:600;
+    color:var(--olive-sh);
+    margin-top:2px;
+  }
 
   footer{
     max-width:440px;
@@ -679,6 +686,84 @@
   }
   .sync-status a{color:var(--stblue-sh); text-decoration:underline;}
 
+  .personalize-card{
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:14px;
+    margin-top:16px;
+    overflow:hidden;
+  }
+  .personalize-toggle{
+    all:unset;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    box-sizing:border-box;
+    padding:12px 14px;
+    cursor:pointer;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--ink);
+  }
+  .personalize-chevron{
+    color:var(--muted);
+    transition:transform .2s ease;
+  }
+  .personalize-toggle[aria-expanded="true"] .personalize-chevron{transform:rotate(180deg);}
+  .personalize-body{padding:0 14px 14px;}
+  .field-label{
+    display:block;
+    font-size:11px;
+    font-weight:700;
+    color:var(--muted);
+    margin:8px 0 4px;
+  }
+  .field-label:first-child{margin-top:0;}
+
+  .eas-countdown{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    color:var(--oldglory);
+    margin-top:10px;
+  }
+
+  .node-here-badge{
+    position:absolute;
+    top:-10px;
+    left:50%;
+    transform:translateX(-50%);
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:9px;
+    color:#fff;
+    background:var(--oldglory);
+    padding:2px 7px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+
+  /* accessibility: keep a visible focus ring on custom (all:unset) controls */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible{
+    outline:3px solid var(--stblue);
+    outline-offset:2px;
+  }
+  .sr-only{
+    position:absolute;
+    width:1px; height:1px;
+    padding:0; margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    white-space:nowrap;
+    border:0;
+  }
+
   .auth-card{
     background:var(--card);
     border:2px solid var(--track);
@@ -1052,6 +1137,31 @@
   <h1>Let's Get You Squared Away</h1>
   <div class="sub">Tap a stop on the path. Each one's a quick card — what to handle now, and where to go.</div>
 
+  <div class="personalize-card" id="personalizeCard">
+    <button type="button" class="personalize-toggle" id="personalizeToggle" aria-expanded="false" aria-controls="personalizeBody">
+      <span id="personalizeSummary">Set your EAS date &amp; branch</span>
+      <span class="personalize-chevron" aria-hidden="true">▾</span>
+    </button>
+    <div class="personalize-body" id="personalizeBody" style="display:none;">
+      <label class="field-label" for="easDateInput">Your EAS / separation date</label>
+      <input type="date" id="easDateInput" class="zip-input full" aria-label="EAS or separation date">
+      <label class="field-label" for="branchSelect">Your branch</label>
+      <select id="branchSelect" class="zip-input full" aria-label="Branch of service">
+        <option value="">Select a branch (optional)</option>
+        <option value="Army">Army</option>
+        <option value="Navy">Navy</option>
+        <option value="Air Force">Air Force</option>
+        <option value="Marine Corps">Marine Corps</option>
+        <option value="Space Force">Space Force</option>
+        <option value="Coast Guard">Coast Guard</option>
+      </select>
+      <div class="tm-settings-note" id="branchTapNote" style="display:none;"></div>
+      <button type="button" class="zip-btn full-btn" id="personalizeSave">Save</button>
+    </div>
+  </div>
+
+  <div class="eas-countdown" id="easCountdown" style="display:none;"></div>
+
   <div class="progress" id="progress">
     <div class="progress-label" id="progressLabel">0 of 7 explored</div>
   </div>
@@ -1059,7 +1169,7 @@
   <div class="sync-status" id="syncStatus"></div>
 
   <div class="path-container" id="pathContainer">
-    <svg id="pathSvg" preserveAspectRatio="none"></svg>
+    <svg id="pathSvg" preserveAspectRatio="none" role="img" aria-label="Timeline path connecting all checkpoints"></svg>
   </div>
 
   <footer>
@@ -1220,32 +1330,32 @@
   <div id="conversationsList" class="conversations-list"></div>
 </div>
 
-<nav class="tabbar" id="tabbar">
-  <button class="tab-btn active" data-tab="tab-path" id="tabBtnPath">
-    <span class="tab-icon">🗺️</span>
+<nav class="tabbar" id="tabbar" role="tablist" aria-label="Main sections">
+  <button class="tab-btn active" data-tab="tab-path" id="tabBtnPath" role="tab" aria-selected="true">
+    <span class="tab-icon" aria-hidden="true">🗺️</span>
     <span class="tab-label">Path</span>
   </button>
-  <button class="tab-btn" data-tab="tab-events" id="tabBtnEvents">
-    <span class="tab-icon">📍</span>
+  <button class="tab-btn" data-tab="tab-events" id="tabBtnEvents" role="tab" aria-selected="false">
+    <span class="tab-icon" aria-hidden="true">📍</span>
     <span class="tab-label">Events</span>
   </button>
-  <button class="tab-btn" data-tab="tab-match" id="tabBtnMatch">
-    <span class="tab-icon">🤝</span>
+  <button class="tab-btn" data-tab="tab-match" id="tabBtnMatch" role="tab" aria-selected="false">
+    <span class="tab-icon" aria-hidden="true">🤝</span>
     <span class="tab-label">Match</span>
   </button>
-  <button class="tab-btn" data-tab="tab-messages" id="tabBtnMessages">
+  <button class="tab-btn" data-tab="tab-messages" id="tabBtnMessages" role="tab" aria-selected="false">
     <span class="tab-icon-wrap">
-      <span class="tab-icon">💬</span>
-      <span class="unread-dot" id="unreadDot" style="display:none;"></span>
+      <span class="tab-icon" aria-hidden="true">💬</span>
+      <span class="unread-dot" id="unreadDot" style="display:none;" role="status" aria-label="Unread messages"></span>
     </span>
     <span class="tab-label">Messages</span>
   </button>
-  <button class="tab-btn" data-tab="tab-tips" id="tabBtnTips">
-    <span class="tab-icon">💡</span>
+  <button class="tab-btn" data-tab="tab-tips" id="tabBtnTips" role="tab" aria-selected="false">
+    <span class="tab-icon" aria-hidden="true">💡</span>
     <span class="tab-label">Tips</span>
   </button>
-  <button class="tab-btn" data-tab="tab-glossary" id="tabBtnGlossary">
-    <span class="tab-icon">📖</span>
+  <button class="tab-btn" data-tab="tab-glossary" id="tabBtnGlossary" role="tab" aria-selected="false">
+    <span class="tab-icon" aria-hidden="true">📖</span>
     <span class="tab-label">Glossary</span>
   </button>
 </nav>
@@ -1255,7 +1365,7 @@
 <div class="backdrop" id="backdrop"></div>
 <div class="sheet" id="sheet">
   <div class="sheet-top" id="sheetTop">
-    <button class="sheet-close" id="sheetClose">✕</button>
+    <button class="sheet-close" id="sheetClose" aria-label="Close">✕</button>
     <span class="sheet-icon" id="sheetIcon"></span>
     <div class="sheet-t" id="sheetT"></div>
     <div class="sheet-title" id="sheetTitle"></div>
@@ -1275,7 +1385,7 @@
 
 <div class="chat-overlay" id="chatOverlay">
   <div class="chat-header">
-    <button type="button" class="chat-back" id="chatBack">‹</button>
+    <button type="button" class="chat-back" id="chatBack" aria-label="Back to messages">‹</button>
     <span class="chat-partner-name" id="chatPartnerName"></span>
   </div>
   <div class="chat-messages" id="chatMessages"></div>
@@ -1325,7 +1435,7 @@ if (sb) {
 }
 
 const stops = [
-  { t:"T-365", title:"Early Recon", icon:"🔭", color:"var(--slate)", sh:"var(--slate-sh)",
+  { t:"T-365", days:365, title:"Early Recon", icon:"🔭", color:"var(--slate)", sh:"var(--slate-sh)",
     blurb:"One year out. Nothing's due yet, but a few early moves make everything after this easier.",
     must:[
       "Confirm your exact EAS/separation date with your admin",
@@ -1341,7 +1451,7 @@ const stops = [
     ],
     links:[["TAP overview","https://www.dol.gov/agencies/vets/tap"],["SkillBridge","https://skillbridge.osd.mil/"],["GI Bill","https://www.va.gov/education/about-gi-bill-benefits/"]]
   },
-  { t:"T-180", title:"SkillBridge Deadline", icon:"📝", color:"var(--alert)", sh:"var(--alert-sh)", big:true,
+  { t:"T-180", days:180, title:"SkillBridge Deadline", icon:"📝", color:"var(--alert)", sh:"var(--alert-sh)", big:true,
     blurb:"Six months out. This is a hard deadline for Marines — SkillBridge paperwork is due now, and TAP is no longer optional.",
     must:[
       "Submit SkillBridge paperwork — required 6 months before EAS per USMC order",
@@ -1357,7 +1467,7 @@ const stops = [
     ],
     links:[["SkillBridge","https://skillbridge.osd.mil/"],["TAP overview","https://www.dol.gov/agencies/vets/tap"],["VA pre-discharge claims","https://www.benefits.va.gov/predischarge/"]]
   },
-  { t:"T-90", title:"Final Systems Check", icon:"🧭", color:"var(--olive)", sh:"var(--olive-sh)",
+  { t:"T-90", days:90, title:"Final Systems Check", icon:"🧭", color:"var(--olive)", sh:"var(--olive-sh)",
     blurb:"Three months out. Get paperwork moving before it gets expensive to fix.",
     must:[
       "Sign off Career Readiness Standards (TAP/GPS)",
@@ -1373,7 +1483,7 @@ const stops = [
     ],
     links:[["VA pre-discharge claims","https://www.benefits.va.gov/predischarge/"],["SkillBridge","https://skillbridge.osd.mil/"],["TAP overview","https://www.dol.gov/agencies/vets/tap"]]
   },
-  { t:"T-60", title:"Out-Processing Push", icon:"📋", color:"var(--khaki)", sh:"var(--khaki-sh)",
+  { t:"T-60", days:60, title:"Out-Processing Push", icon:"📋", color:"var(--khaki)", sh:"var(--khaki-sh)",
     blurb:"Two months out. Installation clearing eats your calendar — beat it to the punch.",
     must:[
       "Complete final medical & dental exams",
@@ -1389,7 +1499,7 @@ const stops = [
     ],
     links:[["VA health care","https://www.va.gov/health-care/how-to-apply/"],["USAJobs veterans","https://www.usajobs.gov/Veterans"],["Moving & PCS","https://www.militaryonesource.mil/moving-housing/"]]
   },
-  { t:"T-30", title:"Final Appointments", icon:"🎒", color:"var(--stblue)", sh:"var(--stblue-sh)",
+  { t:"T-30", days:30, title:"Final Appointments", icon:"🎒", color:"var(--stblue)", sh:"var(--stblue-sh)",
     blurb:"One month out. Close every loop — nothing's easier to fix once you're gone.",
     must:[
       "Verify your DD214 will be accurate",
@@ -1405,7 +1515,7 @@ const stops = [
     ],
     links:[["VA.gov sign-in","https://www.va.gov/sign-in/"],["Get your DD214","https://www.va.gov/records/get-military-service-records/"]]
   },
-  { t:"T-0", title:"Separation Day", icon:"🎖️", color:"var(--oldglory)", sh:"var(--oldglory-sh)", big:true,
+  { t:"T-0", days:0, title:"Separation Day", icon:"🎖️", color:"var(--oldglory)", sh:"var(--oldglory-sh)", big:true,
     blurb:"This is the line. What you activate now decides how fast benefits kick in.",
     must:[
       "Check your DD214 line by line",
@@ -1421,7 +1531,7 @@ const stops = [
     ],
     links:[["VGLI conversion","https://www.va.gov/life-insurance/options-eligibility/vgli/"],["Veteran ID card","https://www.va.gov/records/get-veteran-id-cards/"],["UCX unemployment","https://www.dol.gov/agencies/vets/programs/ucx"]]
   },
-  { t:"6 MO", title:"First Reassessment", icon:"🌱", color:"var(--navy)", sh:"var(--navy-sh)",
+  { t:"6 MO", days:-182, title:"First Reassessment", icon:"🌱", color:"var(--navy)", sh:"var(--navy-sh)",
     blurb:"Six months in. The adrenaline's worn off — check what's actually working.",
     must:[
       "Follow up on your VA claim status",
@@ -1437,7 +1547,7 @@ const stops = [
     ],
     links:[["Vet Centers","https://www.vetcenter.va.gov/"],["VR&E program","https://www.va.gov/careers-employment/vocational-rehabilitation/"],["GI Bill","https://www.va.gov/education/about-gi-bill-benefits/"]]
   },
-  { t:"1 YR", title:"One Year Mark", icon:"🛡️", color:"var(--bronze)", sh:"var(--bronze-sh)",
+  { t:"1 YR", days:-365, title:"One Year Mark", icon:"🛡️", color:"var(--bronze)", sh:"var(--bronze-sh)",
     blurb:"A full year out. A few deadlines quietly expire — worth a deliberate check.",
     must:[
       "Verify your VGLI conversion deadline",
@@ -1453,7 +1563,7 @@ const stops = [
     ],
     links:[["VA decision reviews","https://www.va.gov/decision-reviews/"],["Veterans Business Outreach Centers","https://www.sba.gov/local-assistance/resource-partners/veterans-business-outreach-center-vboc-program"]]
   },
-  { t:"2+ YR", title:"Long-Term Standing", icon:"🏆", color:"var(--gold)", sh:"var(--gold-sh)", big:true,
+  { t:"2+ YR", days:-730, title:"Long-Term Standing", icon:"🏆", color:"var(--gold)", sh:"var(--gold-sh)", big:true,
     blurb:"Two years and beyond. Now it's maintenance and growth, not urgency.",
     must:[
       "File a claim increase if a condition's worsened",
@@ -1528,6 +1638,9 @@ function migrateOldProgress(data){
   return data;
 }
 
+let easDate = null;
+let userBranch = '';
+
 function applyProgressData(data){
   if (!data) return;
   const migrated = Array.isArray(data.checked) && data.checked.length === 7;
@@ -1561,12 +1674,15 @@ function applyProgressData(data){
       }
     });
   }
+  easDate = data.easDate || null;
+  userBranch = data.branch || '';
   updateProgress();
+  applyPersonalization();
   if (migrated) saveProgress();
 }
 
 function saveProgress(){
-  const payload = { visited: Array.from(visited), checked: checkedState };
+  const payload = { visited: Array.from(visited), checked: checkedState, easDate, branch: userBranch };
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
@@ -1582,7 +1698,7 @@ function saveProgress(){
 }
 
 async function pushProgressToCloud(userId){
-  const payload = { visited: Array.from(visited), checked: checkedState };
+  const payload = { visited: Array.from(visited), checked: checkedState, easDate, branch: userBranch };
   try {
     await sb.from('checklist_progress')
       .upsert({ id: userId, data: payload, updated_at: new Date().toISOString() });
@@ -1599,6 +1715,127 @@ function loadProgress(){
     // No saved progress yet — start fresh
   }
 }
+
+/* ---------------- Personalization: real EAS date + branch ---------------- */
+
+function stopDateFor(stop){
+  if (!easDate) return null;
+  const base = new Date(easDate + 'T00:00:00');
+  base.setDate(base.getDate() - stop.days);
+  return base;
+}
+
+function formatShortDate(d){
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function daysUntilEas(){
+  if (!easDate) return null;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const target = new Date(easDate + 'T00:00:00');
+  return Math.round((target - today) / 86400000);
+}
+
+function currentStageIndex(){
+  const du = daysUntilEas();
+  if (du === null) return -1;
+  let idx = 0;
+  for (let i = 0; i < stops.length; i++) {
+    if (stops[i].days >= du) idx = i;
+  }
+  return idx;
+}
+
+function applyPersonalization(){
+  const summary = document.getElementById('personalizeSummary');
+  const easInput = document.getElementById('easDateInput');
+  const branchSelect = document.getElementById('branchSelect');
+  if (easInput) easInput.value = easDate || '';
+  if (branchSelect) branchSelect.value = userBranch || '';
+
+  if (summary) {
+    if (easDate && userBranch) summary.textContent = `${userBranch} · EAS ${formatShortDate(new Date(easDate + 'T00:00:00'))}`;
+    else if (easDate) summary.textContent = `EAS ${formatShortDate(new Date(easDate + 'T00:00:00'))}`;
+    else if (userBranch) summary.textContent = `${userBranch} · Set your EAS date`;
+    else summary.textContent = 'Set your EAS date & branch';
+  }
+
+  // update each node's date subtitle
+  stops.forEach((s, i) => {
+    const dateEl = document.getElementById('nodedate-' + i);
+    if (!dateEl) return;
+    const d = stopDateFor(s);
+    dateEl.textContent = d ? formatShortDate(d) : '';
+  });
+
+  // countdown banner
+  const countdownEl = document.getElementById('easCountdown');
+  const du = daysUntilEas();
+  if (du === null) {
+    countdownEl.style.display = 'none';
+  } else {
+    countdownEl.style.display = 'block';
+    countdownEl.textContent = du >= 0
+      ? `${du} day${du === 1 ? '' : 's'} until EAS`
+      : `${Math.abs(du)} day${Math.abs(du) === 1 ? '' : 's'} since EAS`;
+  }
+
+  // "you are here" badge — only one at a time
+  document.querySelectorAll('.node-here-badge').forEach(b => b.remove());
+  const curIdx = currentStageIndex();
+  if (curIdx >= 0) {
+    const host = document.getElementById(`nodebtn-${curIdx}`);
+    if (host) {
+      const badge = document.createElement('span');
+      badge.className = 'node-here-badge';
+      badge.textContent = 'YOU ARE HERE';
+      host.parentElement.style.position = 'relative';
+      host.parentElement.insertBefore(badge, host);
+    }
+  }
+
+  applyBranchNotes();
+}
+
+function applyBranchNotes(){
+  const branchNames = {
+    'Army': 'SFL-TAP (Soldier for Life)',
+    'Navy': 'Transition GPS',
+    'Marine Corps': 'Transition Readiness Program',
+    'Air Force': 'Air Force TAP',
+    'Space Force': 'Air Force TAP (Space Force uses the same system)',
+    'Coast Guard': 'Coast Guard Work-Life TAP'
+  };
+  const note = document.getElementById('branchTapNote');
+  if (!note) return;
+  if (userBranch && branchNames[userBranch]) {
+    note.style.display = 'block';
+    note.textContent = `Your branch calls this ${branchNames[userBranch]} — same requirements, different name.`;
+  } else {
+    note.style.display = 'none';
+  }
+}
+
+function initPersonalizeCard(){
+  const toggle = document.getElementById('personalizeToggle');
+  const body = document.getElementById('personalizeBody');
+  toggle.addEventListener('click', () => {
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'block';
+    toggle.setAttribute('aria-expanded', String(!isOpen));
+  });
+  document.getElementById('personalizeSave').addEventListener('click', () => {
+    easDate = document.getElementById('easDateInput').value || null;
+    userBranch = document.getElementById('branchSelect').value || '';
+    applyPersonalization();
+    saveProgress();
+    body.style.display = 'none';
+    toggle.setAttribute('aria-expanded', 'false');
+  });
+}
+
+
 
 async function handleProgressSync(session){
   const syncEl = document.getElementById('syncStatus');
@@ -1636,12 +1873,14 @@ stops.forEach((s, i) => {
 
   wrap.innerHTML = `
     <button class="node-btn ${s.big ? 'big' : ''}" id="nodebtn-${i}" data-idx="${i}"
+      aria-label="${s.t} — ${s.title}. Tap to see checklist."
       style="background:${s.color}; box-shadow:0 5px 0 ${s.sh}; color:${s.color};">
       ${s.icon}
     </button>
     <div class="node-label">
       <div class="node-t">${s.t}</div>
       <div class="node-title">${s.title}</div>
+      <div class="node-date" id="nodedate-${i}"></div>
     </div>
   `;
   container.appendChild(wrap);
@@ -1664,6 +1903,8 @@ function updateProgress(){
   });
 }
 updateProgress();
+initPersonalizeCard();
+applyPersonalization();
 loadProgress();
 
 const backdrop = document.getElementById('backdrop');
@@ -1776,7 +2017,11 @@ tabButtons.forEach(btn => {
     const target = btn.getAttribute('data-tab');
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById(target).classList.add('active');
-    tabButtons.forEach(b => b.classList.toggle('active', b === btn));
+    tabButtons.forEach(b => {
+      const isActive = b === btn;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-selected', String(isActive));
+    });
     window.scrollTo(0, 0);
     if (target === 'tab-events' && !eventsTabInitialized) {
       eventsTabInitialized = true;
@@ -2522,9 +2767,9 @@ function buildTipCard(t) {
 
   card.innerHTML = `
     <div class="tip-votes">
-      <button class="vote-btn up ${myVote === 1 ? 'active' : ''}" data-dir="1">▲</button>
-      <span class="tip-score">${t.score}</span>
-      <button class="vote-btn down ${myVote === -1 ? 'active' : ''}" data-dir="-1">▼</button>
+      <button class="vote-btn up ${myVote === 1 ? 'active' : ''}" data-dir="1" aria-label="Upvote this tip" aria-pressed="${myVote === 1}">▲</button>
+      <span class="tip-score" aria-label="Score ${t.score}">${t.score}</span>
+      <button class="vote-btn down ${myVote === -1 ? 'active' : ''}" data-dir="-1" aria-label="Downvote this tip" aria-pressed="${myVote === -1}">▼</button>
     </div>
     <div class="tip-body">
       <div class="tip-content">${escapeHtml(t.content)}</div>
@@ -2705,6 +2950,8 @@ function renderAzStrip(availableLetters) {
     const btn = document.createElement('button');
     btn.className = 'az-btn' + (has ? '' : ' disabled');
     btn.textContent = letter;
+    btn.setAttribute('aria-label', has ? `Jump to terms starting with ${letter}` : `No terms starting with ${letter}`);
+    if (!has) btn.disabled = true;
     if (has) {
       btn.addEventListener('click', () => {
         const target = document.getElementById('glossary-letter-' + letter);
