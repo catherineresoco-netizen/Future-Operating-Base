@@ -394,7 +394,7 @@
     background:var(--card);
     border-top:2px solid var(--track);
     display:flex;
-    padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    padding:8px 10px calc(8px + env(safe-area-inset-bottom));
     z-index:30;
   }
   .tab-btn{
@@ -403,13 +403,13 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:1px;
-    padding:5px 0;
+    gap:2px;
+    padding:6px 0;
     cursor:pointer;
-    border-radius:10px;
+    border-radius:12px;
     min-width:0;
   }
-  .tab-icon{font-size:17px; opacity:0.5;}
+  .tab-icon{font-size:20px; opacity:0.5;}
   .tab-icon-wrap{position:relative; display:inline-block;}
   .unread-dot{
     position:absolute;
@@ -422,7 +422,7 @@
   .tab-label{
     font-family:'Baloo 2',sans-serif;
     font-weight:700;
-    font-size:9px;
+    font-size:11px;
     color:var(--muted);
     white-space:nowrap;
   }
@@ -595,6 +595,59 @@
 
   .tm-section{margin-top:4px;}
 
+  .crisis-card{
+    background:var(--red2);
+    border-radius:18px;
+    padding:16px 18px;
+    margin-bottom:20px;
+    box-shadow:0 4px 16px rgba(232,33,61,0.25);
+  }
+  .crisis-title{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:800;
+    font-size:16px;
+    color:#fff;
+  }
+  .crisis-sub{
+    font-size:12.5px;
+    font-weight:600;
+    color:rgba(255,255,255,0.92);
+    margin-top:4px;
+    line-height:1.45;
+  }
+  .crisis-actions{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-top:14px;
+  }
+  .crisis-btn{
+    display:block;
+    text-align:center;
+    text-decoration:none;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--red2);
+    background:#fff;
+    padding:12px;
+    border-radius:12px;
+  }
+  .crisis-btn:active{transform:translateY(2px);}
+  .crisis-btn-note{
+    font-family:'Nunito',sans-serif;
+    font-weight:600;
+    font-size:11.5px;
+    opacity:0.75;
+  }
+  .crisis-note{
+    font-size:10.5px;
+    font-weight:600;
+    color:rgba(255,255,255,0.8);
+    margin-top:12px;
+    line-height:1.4;
+  }
+
   /* mentor match */
   .match-screen{margin-top:6px;}
 
@@ -626,8 +679,17 @@
     font-weight:600;
     color:var(--muted);
   }
-  .role-mentee{border-color:#BFD9EE;}
-  .role-mentor{border-color:#EAD0A8;}
+
+  .subpage-back{
+    all:unset;
+    display:inline-block;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--tab-accent);
+    cursor:pointer;
+    margin-bottom:10px;
+  }
 
   .zip-input.full{
     width:100%;
@@ -1021,6 +1083,30 @@
     cursor:pointer;
   }
 
+  .discount-category{
+    display:inline-block;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:9.5px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:#fff;
+    padding:3px 9px;
+    border-radius:999px;
+    margin-bottom:6px;
+  }
+  .discount-verify{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:600;
+    font-size:10px;
+    color:var(--muted);
+    background:#F3F1E9;
+    padding:2px 8px;
+    border-radius:999px;
+    margin-top:8px;
+  }
+
   .faq-list{margin-top:14px;}
   .faq-item{
     background:var(--card);
@@ -1270,7 +1356,46 @@
   </footer>
 </div>
 
+<div class="wrap tab-panel" id="tab-more">
+  <div class="eyebrow">More Resources</div>
+  <h1>Everything Else</h1>
+  <div class="sub">Rounding out the app — local events, discounts, terms, and answers.</div>
+
+  <button type="button" class="role-card" data-goto="tab-events">
+    <span class="role-icon">📍</span>
+    <span class="role-title">Local Events</span>
+    <span class="role-sub">Veteran organizations and ticketed events near you</span>
+  </button>
+  <button type="button" class="role-card" data-goto="tab-discounts">
+    <span class="role-icon">🏷️</span>
+    <span class="role-title">Veteran Discounts</span>
+    <span class="role-sub">Brands with standing veteran discount programs</span>
+  </button>
+  <button type="button" class="role-card" data-goto="tab-glossary">
+    <span class="role-icon">📖</span>
+    <span class="role-title">Glossary</span>
+    <span class="role-sub">Every acronym and term, explained plainly</span>
+  </button>
+  <button type="button" class="role-card" data-goto="tab-faq">
+    <span class="role-icon">❓</span>
+    <span class="role-title">FAQ</span>
+    <span class="role-sub">Quick answers about how this app works</span>
+  </button>
+
+  <div class="crisis-card">
+    <div class="crisis-title">🆘 Veterans Crisis Line</div>
+    <div class="crisis-sub">Free, confidential, 24/7. You don't need to be enrolled in VA health care to use it.</div>
+    <div class="crisis-actions">
+      <a href="tel:988" class="crisis-btn">Call 988 <span class="crisis-btn-note">then press 1</span></a>
+      <a href="sms:838255" class="crisis-btn">Text 838255</a>
+      <a href="https://www.veteranscrisisline.net/get-help-now/chat/" target="_blank" rel="noopener" class="crisis-btn">Chat Online</a>
+    </div>
+    <div class="crisis-note">TTY: dial 711, then 988. Overseas veterans can also chat at VeteransCrisisLine.net and request a callback.</div>
+  </div>
+</div>
+
 <div class="wrap tab-panel" id="tab-events">
+  <button type="button" class="subpage-back" data-back>‹ More</button>
   <div class="eyebrow">Near You</div>
   <h1>Local Events &amp; Posts</h1>
   <div class="sub">Enter your ZIP and we'll find veteran organizations within 50 miles, nearest first. Most host regular events — tap through for their current calendar.</div>
@@ -1324,6 +1449,7 @@
 </div>
 
 <div class="wrap tab-panel" id="tab-glossary">
+  <button type="button" class="subpage-back" data-back>‹ More</button>
   <div class="eyebrow">Know The Terms</div>
   <h1>Glossary</h1>
   <div class="sub">Every acronym and term in this app, explained plainly. Tap a stage tag to jump straight to it.</div>
@@ -1337,6 +1463,7 @@
 </div>
 
 <div class="wrap tab-panel" id="tab-faq">
+  <button type="button" class="subpage-back" data-back>‹ More</button>
   <div class="eyebrow">Good To Know</div>
   <h1>Frequently Asked Questions</h1>
   <div class="sub">The honest answers, no fine print.</div>
@@ -1375,6 +1502,22 @@
       <p>Benefits, forms, and rules change. This app is meant as a starting point and a memory aid, not a final authority — always double-check anything time-sensitive or financial directly with the VA, your installation, or the linked official source before relying on it.</p>
     </details>
   </div>
+</div>
+
+<div class="wrap tab-panel" id="tab-discounts">
+  <button type="button" class="subpage-back" data-back>‹ More</button>
+  <div class="eyebrow">Save Where You Can</div>
+  <h1>Veteran Discounts</h1>
+  <div class="sub">Brands with standing veteran discount programs, by category. Terms and percentages change — always confirm at checkout.</div>
+
+  <input type="text" id="discountsSearch" class="zip-input full" placeholder="Search brands or categories…">
+
+  <div class="tm-settings-note">
+    Most retailers verify eligibility online through <strong>ID.me</strong> or <strong>SheerID</strong> rather than checking your ID in person — one verified profile often works across several retailers.
+  </div>
+
+  <div id="discountsList" class="glossary-list"></div>
+  <div id="discountsEmpty" class="events-status" style="display:none;">No brands match your search.</div>
 </div>
 
 <div class="wrap tab-panel" id="tab-education">
@@ -1465,10 +1608,6 @@
     <span class="tab-icon" aria-hidden="true">🗺️</span>
     <span class="tab-label">Path</span>
   </button>
-  <button class="tab-btn" data-tab="tab-events" id="tabBtnEvents" role="tab" aria-selected="false">
-    <span class="tab-icon" aria-hidden="true">📍</span>
-    <span class="tab-label">Events</span>
-  </button>
   <button class="tab-btn" data-tab="tab-education" id="tabBtnEducation" role="tab" aria-selected="false">
     <span class="tab-icon" aria-hidden="true">🎓</span>
     <span class="tab-label">Education</span>
@@ -1481,13 +1620,9 @@
     <span class="tab-icon" aria-hidden="true">📄</span>
     <span class="tab-label">Docs</span>
   </button>
-  <button class="tab-btn" data-tab="tab-glossary" id="tabBtnGlossary" role="tab" aria-selected="false">
-    <span class="tab-icon" aria-hidden="true">📖</span>
-    <span class="tab-label">Glossary</span>
-  </button>
-  <button class="tab-btn" data-tab="tab-faq" id="tabBtnFaq" role="tab" aria-selected="false">
-    <span class="tab-icon" aria-hidden="true">❓</span>
-    <span class="tab-label">FAQ</span>
+  <button class="tab-btn" data-tab="tab-more" id="tabBtnMore" role="tab" aria-selected="false">
+    <span class="tab-icon" aria-hidden="true">⋯</span>
+    <span class="tab-label">More</span>
   </button>
 </nav>
 
@@ -2899,6 +3034,7 @@ const tabButtons = document.querySelectorAll('.tab-btn');
 let eventsTabInitialized = false;
 let glossaryTabInitialized = false;
 let documentsTabInitialized = false;
+let discountsTabInitialized = false;
 
 const TAB_ACCENTS = {
   'tab-path': ['var(--red2)', 'var(--red2-sh)'],
@@ -2907,8 +3043,13 @@ const TAB_ACCENTS = {
   'tab-homebuying': ['var(--blue1)', 'var(--blue1-sh)'],
   'tab-documents': ['var(--burg2)', 'var(--burg2-sh)'],
   'tab-glossary': ['var(--burg1)', 'var(--burg1-sh)'],
-  'tab-faq': ['var(--navy1)', 'var(--navy1-sh)']
+  'tab-faq': ['var(--navy1)', 'var(--navy1-sh)'],
+  'tab-discounts': ['var(--red1)', 'var(--red1-sh)'],
+  'tab-more': ['var(--navy2)', 'var(--navy2-sh)']
 };
+
+// sub-pages reached through the More landing page rather than the bottom bar directly
+const MORE_SUBPAGES = new Set(['tab-events', 'tab-glossary', 'tab-faq', 'tab-discounts']);
 
 function applyTabAccent(target){
   const accent = TAB_ACCENTS[target];
@@ -2917,36 +3058,67 @@ function applyTabAccent(target){
   document.documentElement.style.setProperty('--tab-accent-sh', accent[1]);
 }
 
+function setActiveBottomTab(id){
+  tabButtons.forEach(b => {
+    const isActive = b.getAttribute('data-tab') === id;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-selected', String(isActive));
+  });
+}
+
+function showPanel(target){
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(target).classList.add('active');
+  window.scrollTo(0, 0);
+  applyTabAccent(target);
+
+  if (target === 'tab-events' && !eventsTabInitialized) {
+    eventsTabInitialized = true;
+    initEventsTab();
+  }
+  if (target === 'tab-glossary' && !glossaryTabInitialized) {
+    glossaryTabInitialized = true;
+    initGlossaryTab();
+  }
+  if (target === 'tab-documents' && !documentsTabInitialized) {
+    documentsTabInitialized = true;
+    initDocumentsTab();
+  }
+  if (target === 'tab-discounts' && !discountsTabInitialized) {
+    discountsTabInitialized = true;
+    initDiscountsTab();
+  }
+  if (target === 'tab-education') {
+    initEducationTab();
+  }
+  if (target === 'tab-homebuying') {
+    initHomeBuyingTab();
+  }
+}
+
+// bottom bar (Path, Education, Housing, Docs, More)
 tabButtons.forEach(btn => {
   btn.addEventListener('click', () => {
     const target = btn.getAttribute('data-tab');
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById(target).classList.add('active');
-    tabButtons.forEach(b => {
-      const isActive = b === btn;
-      b.classList.toggle('active', isActive);
-      b.setAttribute('aria-selected', String(isActive));
-    });
-    window.scrollTo(0, 0);
-    applyTabAccent(target);
-    if (target === 'tab-events' && !eventsTabInitialized) {
-      eventsTabInitialized = true;
-      initEventsTab();
-    }
-    if (target === 'tab-glossary' && !glossaryTabInitialized) {
-      glossaryTabInitialized = true;
-      initGlossaryTab();
-    }
-    if (target === 'tab-documents' && !documentsTabInitialized) {
-      documentsTabInitialized = true;
-      initDocumentsTab();
-    }
-    if (target === 'tab-education') {
-      initEducationTab();
-    }
-    if (target === 'tab-homebuying') {
-      initHomeBuyingTab();
-    }
+    showPanel(target);
+    setActiveBottomTab(target);
+  });
+});
+
+// cards on the More landing page
+document.querySelectorAll('#tab-more .role-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const target = card.getAttribute('data-goto');
+    showPanel(target);
+    setActiveBottomTab('tab-more'); // stay highlighted as the parent section
+  });
+});
+
+// back buttons on Events / Glossary / FAQ / Discounts
+document.querySelectorAll('[data-back]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    showPanel('tab-more');
+    setActiveBottomTab('tab-more');
   });
 });
 
@@ -3623,6 +3795,97 @@ function buildDocumentItem(d) {
   return item;
 }
 
+/* ---------------- Veteran Discounts ---------------- */
+
+const DISCOUNT_CATEGORIES = {
+  home: { label: 'Home Improvement & Retail', color: 'var(--red1)' },
+  outdoor: { label: 'Outdoor, Workwear & Apparel', color: 'var(--red2)' },
+  tech: { label: 'Tech & Wireless', color: 'var(--red3)' },
+  money: { label: 'Insurance & Financial', color: 'var(--burg1)' },
+  travel: { label: 'Travel: Hotels & Car Rental', color: 'var(--navy2)' },
+  food: { label: 'Restaurants', color: 'var(--blue2)' }
+};
+
+const DISCOUNTS = [
+  { brand: "Lowe's", category: 'home', verify: 'In-store or online',
+    desc: "10% off eligible purchases every day, with no annual cap. Open to active duty, veterans, and spouses." },
+  { brand: "Home Depot", category: 'home', verify: 'ID.me',
+    desc: "10% off year-round, generally capped around $400 in savings per year. Also offers tax-free shopping on a large range of items through its military exchange partnership." },
+  { brand: "Target", category: 'home', verify: 'Target Circle account',
+    desc: "Military-specific offers through Target Circle for verified members. The discount varies — check your verified account rather than expecting a fixed percentage." },
+  { brand: "Under Armour", category: 'outdoor', verify: 'ID.me',
+    desc: "20% off for verified military and veterans." },
+  { brand: "The North Face", category: 'outdoor', verify: 'ID.me or SheerID',
+    desc: "A standing military discount, typically in the 10–20% range." },
+  { brand: "Carhartt", category: 'outdoor', verify: 'ID.me or SheerID',
+    desc: "A standing military discount, typically in the 10–20% range." },
+  { brand: "5.11 Tactical", category: 'outdoor', verify: 'ID.me or SheerID',
+    desc: "A standing military discount, typically in the 10–20% range." },
+  { brand: "REI", category: 'outdoor', verify: 'ID.me or SheerID',
+    desc: "A standing military discount, typically in the 10–20% range." },
+  { brand: "Apple", category: 'tech', verify: 'ID.me',
+    desc: "A year-round discount on select products. The amount varies by device and changes with hardware refreshes." },
+  { brand: "Best Buy", category: 'tech', verify: 'ID.me',
+    desc: "A year-round discount on select products for verified military and veterans." },
+  { brand: "Dell / Lenovo / Microsoft", category: 'tech', verify: 'ID.me or account verification',
+    desc: "Standing military and veteran pricing on purchases made directly through each brand's site." },
+  { brand: "Verizon / T-Mobile", category: 'tech', verify: 'Carrier account verification',
+    desc: "Ongoing discounted wireless plans for military and veterans — commonly cited savings run a couple hundred dollars a year, but exact plans and pricing vary." },
+  { brand: "USAA", category: 'money', verify: 'Membership eligibility (veterans, active duty, and family)',
+    desc: "Insurance and banking products with member pricing that's often 10–20% below comparable options, depending on the product." },
+  { brand: "GEICO", category: 'money', verify: 'Policy verification',
+    desc: "A military discount on auto insurance, typically in the 10–20% range depending on your state and policy." },
+  { brand: "Hotel chains (Hilton, Marriott, Hyatt, IHG, Choice, Wyndham, Best Western)", category: 'travel', verify: 'Government/military rate at booking',
+    desc: "Most major chains publish a discounted \"military & government\" rate, typically 10–25% below the best available public rate." },
+  { brand: "Car rental (Hertz, Enterprise, Avis, Budget, National, Alamo, Sixt)", category: 'travel', verify: 'USAA membership or a military rate code',
+    desc: "Discounts vary widely by company — commonly cited in the 5–25% range for leisure travel, with separate contracted rates for official/PCS travel. Worth comparing more than one before booking." },
+  { brand: "Airlines (American, Delta, United, Alaska, JetBlue, Southwest)", category: 'travel', verify: 'Orders or military ID at booking',
+    desc: "Legacy carriers mostly stopped publishing separate discounted military fares years ago, but still offer free or expanded checked-bag allowances for those traveling on PCS or TDY orders." },
+  { brand: "National restaurant chains (Applebee's, Texas Roadhouse, Chili's, and others)", category: 'food', verify: 'Military or veteran ID at the location',
+    desc: "Restaurant discounts are mostly one-day promotions around Veterans Day (November 11) rather than year-round offers, and the list of participating chains changes every year — check again as the date approaches rather than assuming a repeat." }
+];
+
+function initDiscountsTab(){
+  document.getElementById('discountsSearch').addEventListener('input', (e) => {
+    renderDiscounts(e.target.value);
+  });
+  renderDiscounts('');
+}
+
+function renderDiscounts(query){
+  const q = query.trim().toLowerCase();
+  const filtered = DISCOUNTS.filter(d =>
+    !q ||
+    d.brand.toLowerCase().includes(q) ||
+    d.desc.toLowerCase().includes(q) ||
+    DISCOUNT_CATEGORIES[d.category].label.toLowerCase().includes(q)
+  );
+
+  const listEl = document.getElementById('discountsList');
+  const emptyEl = document.getElementById('discountsEmpty');
+  listEl.innerHTML = '';
+
+  if (filtered.length === 0) {
+    emptyEl.style.display = 'block';
+    return;
+  }
+  emptyEl.style.display = 'none';
+  filtered.forEach(d => listEl.appendChild(buildDiscountItem(d)));
+}
+
+function buildDiscountItem(d){
+  const item = document.createElement('div');
+  item.className = 'glossary-item';
+  const cat = DISCOUNT_CATEGORIES[d.category];
+
+  item.innerHTML = `
+    <div class="discount-category" style="background:${cat.color};">${cat.label}</div>
+    <div class="glossary-term">${d.brand}</div>
+    <div class="glossary-def">${d.desc}</div>
+    <div class="discount-verify">Verify via: ${d.verify}</div>
+  `;
+  return item;
+}
 </script>
 </body>
 </html>
