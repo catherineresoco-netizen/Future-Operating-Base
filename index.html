@@ -871,6 +871,112 @@
     border-radius:999px;
     cursor:pointer;
   }
+
+  /* in-app chat */
+  .chat-overlay{
+    display:none;
+    flex-direction:column;
+    position:fixed;
+    inset:0;
+    max-width:440px;
+    margin:0 auto;
+    background:var(--bg);
+    z-index:50;
+  }
+  .chat-overlay.show{display:flex;}
+
+  .chat-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:14px 16px;
+    padding-top:calc(14px + env(safe-area-inset-top));
+    background:var(--navy);
+    color:#fff;
+    flex-shrink:0;
+  }
+  .chat-back{
+    all:unset;
+    font-size:24px;
+    line-height:1;
+    padding:2px 8px;
+    cursor:pointer;
+  }
+  .chat-partner-name{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:15px;
+  }
+
+  .chat-messages{
+    flex:1;
+    overflow-y:auto;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .chat-bubble{
+    max-width:78%;
+    padding:9px 13px;
+    border-radius:16px;
+    font-size:13.5px;
+    font-weight:600;
+    line-height:1.4;
+    word-break:break-word;
+  }
+  .chat-bubble.mine{
+    align-self:flex-end;
+    background:var(--stblue);
+    color:#fff;
+    border-bottom-right-radius:4px;
+  }
+  .chat-bubble.theirs{
+    align-self:flex-start;
+    background:#F3F1E9;
+    color:var(--ink);
+    border-bottom-left-radius:4px;
+  }
+  .chat-empty{
+    text-align:center;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--muted);
+    margin-top:20px;
+  }
+
+  .chat-input-row{
+    display:flex;
+    gap:8px;
+    padding:10px 12px;
+    padding-bottom:calc(10px + env(safe-area-inset-bottom));
+    background:var(--card);
+    border-top:2px solid var(--track);
+    flex-shrink:0;
+  }
+  .chat-input{
+    flex:1;
+    font-family:'Nunito',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    color:var(--ink);
+    background:#F3F1E9;
+    border:none;
+    border-radius:20px;
+    padding:11px 16px;
+    outline:none;
+  }
+  .chat-send{
+    all:unset;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:#fff;
+    background:var(--stblue);
+    border-radius:20px;
+    padding:11px 18px;
+    cursor:pointer;
+  }
 </style>
 </head>
 <body>
@@ -1077,6 +1183,18 @@
     <div class="link-row" id="linkRow"></div>
   </div>
   <button class="got-it" id="gotIt">Got it!</button>
+</div>
+
+<div class="chat-overlay" id="chatOverlay">
+  <div class="chat-header">
+    <button type="button" class="chat-back" id="chatBack">‹</button>
+    <span class="chat-partner-name" id="chatPartnerName"></span>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <form class="chat-input-row" id="chatForm">
+    <input type="text" id="chatInput" class="chat-input" placeholder="Message…" maxlength="2000" autocomplete="off">
+    <button type="submit" class="chat-send">Send</button>
+  </form>
 </div>
 
 <script>
@@ -2129,7 +2247,7 @@ function buildMatchCard(m) {
 
   let actionHtml;
   if (conn && conn.status === 'accepted') {
-    actionHtml = `<span class="contact-loading">Loading contact…</span>`;
+    actionHtml = `<button class="request-btn message-btn">💬 Message</button>`;
   } else if (conn && conn.status === 'pending' && conn.requester_id === myId) {
     actionHtml = `<span class="muted-note">Request sent</span>`;
   } else if (conn && conn.status === 'pending' && conn.recipient_id === myId) {
@@ -2137,7 +2255,7 @@ function buildMatchCard(m) {
   } else if (conn && conn.status === 'declined') {
     actionHtml = `<span class="muted-note">Not connected</span>`;
   } else {
-    actionHtml = `<button class="request-btn">Request contact info</button>`;
+    actionHtml = `<button class="request-btn">Request to connect</button>`;
   }
 
   card.innerHTML = `
@@ -2154,11 +2272,11 @@ function buildMatchCard(m) {
     <div class="event-actions">${actionHtml}</div>
   `;
 
-  const reqBtn = card.querySelector('.request-btn');
-  if (reqBtn) reqBtn.addEventListener('click', () => sendConnectionRequest(m.id, card));
+  const messageBtn = card.querySelector('.message-btn');
+  if (messageBtn) messageBtn.addEventListener('click', () => openChat(conn.id, m.id, m.name));
 
-  const loadingSpan = card.querySelector('.contact-loading');
-  if (loadingSpan) loadFullContact(m.id, card);
+  const reqBtn = card.querySelector('.request-btn:not(.message-btn)');
+  if (reqBtn) reqBtn.addEventListener('click', () => sendConnectionRequest(m.id, card));
 
   return card;
 }
@@ -2169,20 +2287,6 @@ async function sendConnectionRequest(otherId, card) {
     allConnections.push({ requester_id: myId, recipient_id: otherId, status: 'pending' });
     card.querySelector('.event-actions').innerHTML = '<span class="muted-note">Request sent</span>';
   }
-}
-
-async function loadFullContact(otherId, card) {
-  const { data } = await sb.from('profiles').select('name, contact').eq('id', otherId).maybeSingle();
-  const actions = card.querySelector('.event-actions');
-  if (!data || !data.contact) {
-    actions.innerHTML = '<span class="muted-note">Connected — no contact shared</span>';
-    return;
-  }
-  const first = (data.name || '').split(' ')[0];
-  const link = data.contact.includes('@')
-    ? `<a href="mailto:${data.contact}" target="_blank" rel="noopener">Email ${first}</a>`
-    : `<a href="tel:${data.contact.replace(/[^0-9+]/g, '')}" target="_blank" rel="noopener">Call/text ${first}</a>`;
-  actions.innerHTML = link;
 }
 
 function renderIncomingRequests() {
@@ -2508,6 +2612,116 @@ function jumpToStage(code) {
   if (idx === -1) return;
   document.getElementById('tabBtnPath').click();
   setTimeout(() => openSheet(idx), 60);
+}
+
+/* ---------------- In-app Chat ---------------- */
+
+let currentChatConnectionId = null;
+let currentChatChannel = null;
+let chatWired = false;
+
+function wireChatOnce() {
+  if (chatWired) return;
+  chatWired = true;
+  document.getElementById('chatBack').addEventListener('click', closeChat);
+  document.getElementById('chatForm').addEventListener('submit', handleSendMessage);
+}
+
+async function openChat(connectionId, partnerId, partnerName) {
+  wireChatOnce();
+  currentChatConnectionId = connectionId;
+  document.getElementById('chatPartnerName').textContent = partnerName;
+  const messagesEl = document.getElementById('chatMessages');
+  messagesEl.innerHTML = '<div class="chat-empty">Loading conversation…</div>';
+  document.getElementById('chatOverlay').classList.add('show');
+
+  await loadChatHistory(connectionId);
+  subscribeToChat(connectionId);
+}
+
+function closeChat() {
+  document.getElementById('chatOverlay').classList.remove('show');
+  if (currentChatChannel) {
+    sb.removeChannel(currentChatChannel);
+    currentChatChannel = null;
+  }
+  currentChatConnectionId = null;
+}
+
+async function loadChatHistory(connectionId) {
+  const messagesEl = document.getElementById('chatMessages');
+  const { data, error } = await sb.from('messages')
+    .select('*')
+    .eq('connection_id', connectionId)
+    .order('created_at', { ascending: true });
+
+  messagesEl.innerHTML = '';
+  if (error) {
+    messagesEl.innerHTML = '<div class="chat-empty">Couldn\'t load messages right now.</div>';
+    return;
+  }
+  if (!data || data.length === 0) {
+    messagesEl.innerHTML = '<div class="chat-empty">No messages yet — say hello.</div>';
+    return;
+  }
+  data.forEach(appendChatBubble);
+  scrollChatToBottom();
+}
+
+function appendChatBubble(msg) {
+  const messagesEl = document.getElementById('chatMessages');
+  const empty = messagesEl.querySelector('.chat-empty');
+  if (empty) empty.remove();
+
+  const mine = msg.sender_id === myId;
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble ' + (mine ? 'mine' : 'theirs');
+  bubble.textContent = msg.content;
+  messagesEl.appendChild(bubble);
+}
+
+function scrollChatToBottom() {
+  const messagesEl = document.getElementById('chatMessages');
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function subscribeToChat(connectionId) {
+  if (currentChatChannel) {
+    sb.removeChannel(currentChatChannel);
+  }
+  currentChatChannel = sb
+    .channel('chat-' + connectionId)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'messages',
+      filter: `connection_id=eq.${connectionId}`
+    }, (payload) => {
+      // avoid double-rendering messages we just sent ourselves
+      if (payload.new.sender_id === myId) return;
+      appendChatBubble(payload.new);
+      scrollChatToBottom();
+    })
+    .subscribe();
+}
+
+async function handleSendMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById('chatInput');
+  const content = input.value.trim();
+  if (!content || !currentChatConnectionId) return;
+
+  input.value = '';
+  const optimistic = { sender_id: myId, content };
+  appendChatBubble(optimistic);
+  scrollChatToBottom();
+
+  const { error } = await sb.from('messages').insert({
+    connection_id: currentChatConnectionId,
+    sender_id: myId,
+    content
+  });
+  if (error) console.error('Send failed', error);
 }
 </script>
 </body>
