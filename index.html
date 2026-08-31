@@ -802,6 +802,75 @@
     color:var(--muted);
     margin-top:6px;
   }
+
+  .az-strip{
+    display:flex;
+    gap:4px;
+    overflow-x:auto;
+    padding:10px 0 14px;
+    margin-bottom:4px;
+  }
+  .az-btn{
+    all:unset;
+    flex-shrink:0;
+    width:26px; height:26px;
+    border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:12px;
+    color:var(--ink);
+    background:#F3F1E9;
+    cursor:pointer;
+  }
+  .az-btn.disabled{color:var(--track); cursor:default;}
+
+  .glossary-letter{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--oldglory);
+    margin:18px 0 8px;
+  }
+  .glossary-letter:first-child{margin-top:4px;}
+
+  .glossary-item{
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:14px;
+    padding:12px 14px;
+    margin-bottom:8px;
+  }
+  .glossary-term{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .glossary-def{
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--muted);
+    line-height:1.5;
+    margin-top:4px;
+  }
+  .glossary-tags{
+    display:flex;
+    gap:5px;
+    flex-wrap:wrap;
+    margin-top:8px;
+  }
+  .glossary-tag{
+    all:unset;
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700;
+    font-size:10px;
+    color:#fff;
+    background:var(--navy);
+    padding:3px 8px;
+    border-radius:999px;
+    cursor:pointer;
+  }
 </style>
 </head>
 <body>
@@ -952,6 +1021,19 @@
   <div id="tipsList" class="events-results"></div>
 </div>
 
+<div class="wrap tab-panel" id="tab-glossary">
+  <div class="eyebrow">Know The Terms</div>
+  <h1>Glossary</h1>
+  <div class="sub">Every acronym and term in this app, explained plainly. Tap a stage tag to jump straight to it.</div>
+
+  <input type="text" id="glossarySearch" class="zip-input full" placeholder="Search terms or definitions…">
+
+  <div class="az-strip" id="azStrip"></div>
+
+  <div id="glossaryList" class="glossary-list"></div>
+  <div id="glossaryEmpty" class="events-status" style="display:none;">No terms match your search.</div>
+</div>
+
 <nav class="tabbar" id="tabbar">
   <button class="tab-btn active" data-tab="tab-path" id="tabBtnPath">
     <span class="tab-icon">🗺️</span>
@@ -969,7 +1051,12 @@
     <span class="tab-icon">💡</span>
     <span class="tab-label">Tips</span>
   </button>
+  <button class="tab-btn" data-tab="tab-glossary" id="tabBtnGlossary">
+    <span class="tab-icon">📖</span>
+    <span class="tab-label">Glossary</span>
+  </button>
 </nav>
+
 
 <div class="backdrop" id="backdrop"></div>
 <div class="sheet" id="sheet">
@@ -1464,6 +1551,7 @@ const tabButtons = document.querySelectorAll('.tab-btn');
 let eventsTabInitialized = false;
 let matchTabInitialized = false;
 let tipsTabInitialized = false;
+let glossaryTabInitialized = false;
 
 tabButtons.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1483,6 +1571,10 @@ tabButtons.forEach(btn => {
     if (target === 'tab-tips' && !tipsTabInitialized) {
       tipsTabInitialized = true;
       initTipsTab();
+    }
+    if (target === 'tab-glossary' && !glossaryTabInitialized) {
+      glossaryTabInitialized = true;
+      initGlossaryTab();
     }
   });
 });
@@ -2288,6 +2380,134 @@ async function handleSubmitTip() {
   input.value = '';
   statusEl.textContent = '';
   loadTips();
+}
+
+/* ---------------- Glossary ---------------- */
+
+const GLOSSARY_TERMS = [
+  { term: "American Legion", def: "A congressionally chartered veterans organization with local posts nationwide offering community, advocacy, and claims help.", stages: [] },
+  { term: "BDD (Benefits Delivery at Discharge)", def: "The VA's faster pre-discharge disability claim track for those 90–180 days from separation, aiming for a decision sooner after you're out.", stages: ["T-180","T-90"] },
+  { term: "Career Readiness Standards (CRS)", def: "The checklist of milestones — resume, budget, TAP completion, and more — you must meet before separating, tracked through TAP.", stages: ["T-180","T-90"] },
+  { term: "CAC (Common Access Card)", def: "Your military ID card, also used to log into many DoD systems. It stops working after separation, so shift logins to a personal email early.", stages: [] },
+  { term: "Character of Service", def: "The type of discharge listed on your DD214 (e.g., Honorable), which affects eligibility for VA and other benefits.", stages: ["T-30"] },
+  { term: "DAV (Disabled American Veterans)", def: "A nonprofit veterans service organization offering free claims assistance, transportation, and advocacy for injured and ill veterans.", stages: [] },
+  { term: "DD214", def: "Your Certificate of Release or Discharge from Active Duty — the single most important document you'll carry as a veteran. Check every line for accuracy.", stages: ["T-30","T-0"] },
+  { term: "Direct Deposit (VA)", def: "How your VA disability or education payments reach you. Keep your banking info current on VA.gov to avoid delays.", stages: ["2+ YR"] },
+  { term: "EAS (End of Active Service)", def: "Your separation date — the day your active-duty service officially ends. Most of this app is built around counting down to it.", stages: ["T-365","T-180"] },
+  { term: "EOS (End of Service)", def: "Similar to EAS — the point your service obligation ends. Terminology varies slightly by branch and admin office.", stages: [] },
+  { term: "GI Bill (Post-9/11 GI Bill)", def: "A VA education benefit covering tuition, housing, and books for eligible veterans, generally usable for up to 36 months.", stages: ["T-365","6 MO","1 YR","2+ YR"] },
+  { term: "GPS (Goals, Plans, Success)", def: "The goal-setting curriculum track within TAP that helps you build a concrete post-service plan.", stages: ["T-90"] },
+  { term: "Higher-Level Review", def: "A VA appeal option where a more senior reviewer takes a fresh look at your claim decision without new evidence.", stages: ["1 YR"] },
+  { term: "Out-Processing / Clearing", def: "The set of appointments and sign-offs — medical, admin, housing, equipment — required before you can leave your installation.", stages: ["T-60"] },
+  { term: "PCS (Permanent Change of Station)", def: "A military move between duty stations. The moving benefits and processes overlap heavily with your separation move.", stages: ["T-60","T-30"] },
+  { term: "Personnel Record (OMPF)", def: "Your Official Military Personnel File — the permanent record of your service. Request a copy for your own files before you separate.", stages: ["T-180"] },
+  { term: "POV (Privately Owned Vehicle)", def: "Your personal car. If you're moving a long distance, you may be eligible to have it shipped as part of your move.", stages: ["T-30"] },
+  { term: "SBA (Small Business Administration)", def: "The federal agency supporting small business owners, including veterans, through loans, counseling, and resources like VBOCs.", stages: [] },
+  { term: "SGLI (Servicemembers' Group Life Insurance)", def: "Low-cost life insurance you carry on active duty. It ends automatically at separation unless you convert it.", stages: ["T-90","T-0"] },
+  { term: "SkillBridge", def: "A DoD program letting you do civilian job training or an internship during your last months of service while still in pay status. Some branches require the paperwork be submitted a set number of months before EAS.", stages: ["T-365","T-180"] },
+  { term: "Standard Claim (Pre-Discharge)", def: "The VA's pre-discharge disability claim option for those with fewer than 90 days left in service, filed before you separate.", stages: ["T-90"] },
+  { term: "State Veterans Affairs Office", def: "A state-level (not federal) office offering benefits like property tax exemptions, education aid, or hiring preference specific to where you live.", stages: ["T-0"] },
+  { term: "Supplemental Claim", def: "A VA appeal option where you submit new, relevant evidence for a claim that was previously denied or under-rated.", stages: ["1 YR"] },
+  { term: "TAP (Transition Assistance Program)", def: "The mandatory DoD/VA transition course covering benefits, employment, and financial planning. Optional to attend early, required to complete by 180 days out.", stages: ["T-365","T-180"] },
+  { term: "Terminal Leave", def: "Accrued leave taken at the end of your service, often used to bridge the gap between your last day on base and your official separation date.", stages: [] },
+  { term: "UCX (Unemployment Compensation for Ex-Servicemembers)", def: "State-administered unemployment benefits for recently separated veterans who are still looking for work.", stages: ["T-0"] },
+  { term: "USAJobs", def: "The federal government's official job board, where veterans can apply for jobs using veterans' preference.", stages: ["T-60"] },
+  { term: "VA (Department of Veterans Affairs)", def: "The federal agency responsible for veterans' health care, disability compensation, education benefits, and more.", stages: [] },
+  { term: "VA Disability Rating", def: "A percentage (0–100%) the VA assigns to each service-connected condition, determining your monthly compensation.", stages: ["2+ YR"] },
+  { term: "VBOC (Veterans Business Outreach Center)", def: "An SBA-backed resource center offering free counseling and training to veterans starting or growing a business.", stages: ["1 YR"] },
+  { term: "Vet Center", def: "A community-based VA counseling center offering free readjustment counseling, separate from VA medical facilities.", stages: ["6 MO"] },
+  { term: "Veteran ID Card", def: "An optional VA-issued photo ID confirming veteran status, useful for discounts and identification without carrying your DD214.", stages: ["T-0"] },
+  { term: "Veterans' Preference", def: "A hiring advantage veterans get when applying for federal jobs, factored in through USAJobs applications.", stages: ["T-60"] },
+  { term: "VFW (Veterans of Foreign Wars)", def: "A veterans service organization with local posts offering advocacy, community, and claims support for combat veterans.", stages: [] },
+  { term: "VGLI (Veterans' Group Life Insurance)", def: "The life insurance policy SGLI converts into after separation — free conversion window is about 120 days, full window about a year.", stages: ["T-0","1 YR"] },
+  { term: "VR&E (Veteran Readiness & Employment)", def: "A VA program (formerly Vocational Rehabilitation) helping veterans with service-connected disabilities prepare for and find work.", stages: ["6 MO"] },
+  { term: "VSO (Veterans Service Organization)", def: "A general term for nonprofit organizations — VFW, American Legion, DAV, and others — that support veterans, often with free claims help.", stages: ["6 MO","1 YR"] }
+];
+
+function initGlossaryTab() {
+  document.getElementById('glossarySearch').addEventListener('input', (e) => {
+    renderGlossary(e.target.value);
+  });
+  renderGlossary('');
+}
+
+function renderGlossary(query) {
+  const q = query.trim().toLowerCase();
+  const sorted = GLOSSARY_TERMS.slice().sort((a, b) => a.term.localeCompare(b.term));
+  const filtered = q
+    ? sorted.filter(t => t.term.toLowerCase().includes(q) || t.def.toLowerCase().includes(q))
+    : sorted;
+
+  const listEl = document.getElementById('glossaryList');
+  const emptyEl = document.getElementById('glossaryEmpty');
+  listEl.innerHTML = '';
+
+  if (filtered.length === 0) {
+    emptyEl.style.display = 'block';
+    renderAzStrip(new Set());
+    return;
+  }
+  emptyEl.style.display = 'none';
+
+  const availableLetters = new Set();
+  let currentLetter = '';
+
+  filtered.forEach(t => {
+    const letter = t.term[0].toUpperCase();
+    availableLetters.add(letter);
+    if (letter !== currentLetter) {
+      currentLetter = letter;
+      const header = document.createElement('div');
+      header.className = 'glossary-letter';
+      header.id = 'glossary-letter-' + letter;
+      header.textContent = letter;
+      listEl.appendChild(header);
+    }
+    listEl.appendChild(buildGlossaryItem(t));
+  });
+
+  renderAzStrip(availableLetters);
+}
+
+function buildGlossaryItem(t) {
+  const item = document.createElement('div');
+  item.className = 'glossary-item';
+  const tagsHtml = t.stages.map(code => `<button class="glossary-tag" data-stage="${code}">${code}</button>`).join('');
+  item.innerHTML = `
+    <div class="glossary-term">${t.term}</div>
+    <div class="glossary-def">${t.def}</div>
+    ${tagsHtml ? `<div class="glossary-tags">${tagsHtml}</div>` : ''}
+  `;
+  item.querySelectorAll('.glossary-tag').forEach(btn => {
+    btn.addEventListener('click', () => jumpToStage(btn.getAttribute('data-stage')));
+  });
+  return item;
+}
+
+function renderAzStrip(availableLetters) {
+  const strip = document.getElementById('azStrip');
+  strip.innerHTML = '';
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  alphabet.forEach(letter => {
+    const has = availableLetters.has(letter);
+    const btn = document.createElement('button');
+    btn.className = 'az-btn' + (has ? '' : ' disabled');
+    btn.textContent = letter;
+    if (has) {
+      btn.addEventListener('click', () => {
+        const target = document.getElementById('glossary-letter-' + letter);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+    strip.appendChild(btn);
+  });
+}
+
+function jumpToStage(code) {
+  const idx = stops.findIndex(s => s.t === code);
+  if (idx === -1) return;
+  document.getElementById('tabBtnPath').click();
+  setTimeout(() => openSheet(idx), 60);
 }
 </script>
 </body>
