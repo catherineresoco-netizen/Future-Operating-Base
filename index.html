@@ -15,6 +15,8 @@
     --track:#D8DCE3;
     --card:#FFFFFF;
 
+    --slate:#8A94A6;   --slate-sh:#626B7A;
+    --alert:#D9622B;   --alert-sh:#A84A1F;
     --olive:#7C8E42;   --olive-sh:#586A2A;
     --khaki:#D6A756;   --khaki-sh:#B3823A;
     --stblue:#4A7FBF;  --stblue-sh:#2F5A94;
@@ -660,6 +662,14 @@
 
   .match-privacy-note{margin-top:16px;}
 
+  .sync-status{
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--muted);
+    margin-top:8px;
+  }
+  .sync-status a{color:var(--stblue-sh); text-decoration:underline;}
+
   .auth-card{
     background:var(--card);
     border:2px solid var(--track);
@@ -730,6 +740,68 @@
     color:var(--muted);
     padding:8px 6px;
   }
+
+  .tip-submit-card{
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:18px;
+    padding:14px;
+    margin-bottom:16px;
+  }
+  .tip-textarea{
+    resize:vertical;
+    font-family:'Nunito',sans-serif;
+    line-height:1.4;
+  }
+
+  .tip-card{
+    display:flex;
+    gap:12px;
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:10px;
+  }
+  .tip-votes{
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    width:36px;
+  }
+  .vote-btn{
+    all:unset;
+    width:28px; height:28px;
+    border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:13px;
+    color:var(--muted);
+    background:#F3F1E9;
+    cursor:pointer;
+  }
+  .vote-btn.up.active{background:var(--olive); color:#fff;}
+  .vote-btn.down.active{background:var(--oldglory); color:#fff;}
+  .tip-score{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    color:var(--ink);
+  }
+  .tip-body{flex:1; min-width:0;}
+  .tip-content{
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink);
+    line-height:1.45;
+  }
+  .tip-meta{
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--muted);
+    margin-top:6px;
+  }
 </style>
 </head>
 <body>
@@ -741,6 +813,8 @@
   <div class="progress" id="progress">
     <div class="progress-label" id="progressLabel">0 of 7 explored</div>
   </div>
+
+  <div class="sync-status" id="syncStatus"></div>
 
   <div class="path-container" id="pathContainer">
     <svg id="pathSvg" preserveAspectRatio="none"></svg>
@@ -859,6 +933,25 @@
   </div>
 </div>
 
+<div class="wrap tab-panel" id="tab-tips">
+  <div class="eyebrow">From Vets Who've Been There</div>
+  <h1>Quick Tips</h1>
+  <div class="sub">Short, practical things people wish they'd known. Vote the useful ones to the top.</div>
+
+  <div class="tip-submit-card" id="tipSubmitCard">
+    <textarea id="tipInput" class="zip-input full tip-textarea" placeholder="Share a quick tip…" maxlength="280" rows="3"></textarea>
+    <button type="button" class="zip-btn full-btn" id="tipSubmitBtn">Post Tip</button>
+    <div id="tipSubmitStatus" class="events-status"></div>
+  </div>
+
+  <div id="tipsSignInNote" class="tm-settings-note" style="display:none;">
+    <a href="#" id="tipsSignInLink">Sign in</a> to post a tip or vote.
+  </div>
+
+  <div id="tipsStatus" class="events-status"></div>
+  <div id="tipsList" class="events-results"></div>
+</div>
+
 <nav class="tabbar" id="tabbar">
   <button class="tab-btn active" data-tab="tab-path" id="tabBtnPath">
     <span class="tab-icon">🗺️</span>
@@ -871,6 +964,10 @@
   <button class="tab-btn" data-tab="tab-match" id="tabBtnMatch">
     <span class="tab-icon">🤝</span>
     <span class="tab-label">Match</span>
+  </button>
+  <button class="tab-btn" data-tab="tab-tips" id="tabBtnTips">
+    <span class="tab-icon">💡</span>
+    <span class="tab-label">Tips</span>
   </button>
 </nav>
 
@@ -896,9 +993,68 @@
 </div>
 
 <script>
+/* ---------------- Supabase bootstrap (must load first) ---------------- */
+
+const SUPABASE_URL = 'https://kbyyqayedkfbqzvqtget.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_nipXFJhW69UONKCcrVuNxQ_mXLchbc9'; // publishable key — safe to expose client-side
+
+const sb = (SUPABASE_URL.startsWith('http') && window.supabase)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
+
+let currentSession = null;
+
+function onGlobalAuthChange(session) {
+  currentSession = session;
+  handleProgressSync(session);
+  if (typeof matchTabInitialized !== 'undefined' && matchTabInitialized) {
+    handleSession(session);
+  }
+  if (typeof tipsTabInitialized !== 'undefined' && tipsTabInitialized) {
+    loadTips();
+  }
+}
+
+if (sb) {
+  sb.auth.onAuthStateChange((_event, session) => onGlobalAuthChange(session));
+  sb.auth.getSession().then(({ data }) => onGlobalAuthChange(data.session));
+}
+
 const stops = [
-  { t:"T-60", title:"Final Systems Check", icon:"🧭", color:"var(--olive)", sh:"var(--olive-sh)",
-    blurb:"Two months out. Get paperwork moving before it gets expensive to fix.",
+  { t:"T-365", title:"Early Recon", icon:"🔭", color:"var(--slate)", sh:"var(--slate-sh)",
+    blurb:"One year out. Nothing's due yet, but a few early moves make everything after this easier.",
+    must:[
+      "Confirm your exact EAS/separation date with your admin",
+      "Review your enlistment contract and any remaining obligations",
+      "Start a folder — digital or paper — for transition paperwork",
+      "Research your Post-9/11 GI Bill eligibility and options",
+      "Check your SkillBridge eligibility and paperwork timeline"
+    ],
+    recommended:[
+      "Enroll in TAP early if slots are open — optional this far out",
+      "Start researching civilian career paths or licensing needs",
+      "Begin a rough draft of your civilian resume"
+    ],
+    links:[["TAP overview","https://www.dol.gov/agencies/vets/tap"],["SkillBridge","https://skillbridge.osd.mil/"],["GI Bill","https://www.va.gov/education/about-gi-bill-benefits/"]]
+  },
+  { t:"T-180", title:"SkillBridge Deadline", icon:"📝", color:"var(--alert)", sh:"var(--alert-sh)", big:true,
+    blurb:"Six months out. This is a hard deadline for Marines — SkillBridge paperwork is due now, and TAP is no longer optional.",
+    must:[
+      "Submit SkillBridge paperwork — required 6 months before EAS per USMC order",
+      "Complete TAP — mandatory from this point on",
+      "Confirm your Career Readiness Standards timeline with your unit",
+      "Meet with your career counselor to finalize your transition plan",
+      "Confirm your VA pre-discharge claim filing window"
+    ],
+    recommended:[
+      "Line up SkillBridge internship interviews if you're pursuing one",
+      "Request a copy of your official personnel record",
+      "Start networking with veterans in your target industry"
+    ],
+    links:[["SkillBridge","https://skillbridge.osd.mil/"],["TAP overview","https://www.dol.gov/agencies/vets/tap"],["VA pre-discharge claims","https://www.benefits.va.gov/predischarge/"]]
+  },
+  { t:"T-90", title:"Final Systems Check", icon:"🧭", color:"var(--olive)", sh:"var(--olive-sh)",
+    blurb:"Three months out. Get paperwork moving before it gets expensive to fix.",
     must:[
       "Sign off Career Readiness Standards (TAP/GPS)",
       "File your VA pre-discharge claim if you haven't",
@@ -913,8 +1069,8 @@ const stops = [
     ],
     links:[["VA pre-discharge claims","https://www.benefits.va.gov/predischarge/"],["SkillBridge","https://skillbridge.osd.mil/"],["TAP overview","https://www.dol.gov/agencies/vets/tap"]]
   },
-  { t:"T-30", title:"Out-Processing Push", icon:"📋", color:"var(--khaki)", sh:"var(--khaki-sh)",
-    blurb:"One month out. Installation clearing eats your calendar — beat it to the punch.",
+  { t:"T-60", title:"Out-Processing Push", icon:"📋", color:"var(--khaki)", sh:"var(--khaki-sh)",
+    blurb:"Two months out. Installation clearing eats your calendar — beat it to the punch.",
     must:[
       "Complete final medical & dental exams",
       "Start your installation clearing checklist",
@@ -929,8 +1085,8 @@ const stops = [
     ],
     links:[["VA health care","https://www.va.gov/health-care/how-to-apply/"],["USAJobs veterans","https://www.usajobs.gov/Veterans"],["Moving & PCS","https://www.militaryonesource.mil/moving-housing/"]]
   },
-  { t:"T-14", title:"Final Appointments", icon:"🎒", color:"var(--stblue)", sh:"var(--stblue-sh)",
-    blurb:"Two weeks out. Close every loop — nothing's easier to fix once you're gone.",
+  { t:"T-30", title:"Final Appointments", icon:"🎒", color:"var(--stblue)", sh:"var(--stblue-sh)",
+    blurb:"One month out. Close every loop — nothing's easier to fix once you're gone.",
     must:[
       "Verify your DD214 will be accurate",
       "Turn in gear and uniforms",
@@ -1011,7 +1167,7 @@ const stops = [
   }
 ];
 
-const xPercents = [15, 68, 25, 50, 72, 20, 50];
+const xPercents = [50, 75, 15, 68, 25, 50, 72, 20, 50];
 const yStep = 132;
 const yStart = 46;
 
@@ -1055,48 +1211,116 @@ function addVisitedBadge(idx){
   }
 }
 
+function migrateOldProgress(data){
+  // Progress saved before T-365 and T-180 existed had 7 stops starting at T-60.
+  // Those two new stops now sit at indices 0 and 1, so old indices need +2.
+  if (data && Array.isArray(data.checked) && data.checked.length === 7) {
+    const blankRow = () => ({ must: [false,false,false,false,false], recommended: [false,false,false] });
+    return {
+      visited: (data.visited || []).map(i => i + 2),
+      checked: [blankRow(), blankRow(), ...data.checked]
+    };
+  }
+  return data;
+}
+
+function applyProgressData(data){
+  if (!data) return;
+  const migrated = Array.isArray(data.checked) && data.checked.length === 7;
+  data = migrateOldProgress(data);
+  visited.clear();
+  document.querySelectorAll('.node-badge').forEach(b => b.remove());
+  (data.visited || []).forEach(idx => {
+    visited.add(idx);
+    addVisitedBadge(idx);
+  });
+  checkedState.forEach(row => {
+    row.must = row.must.map(() => false);
+    row.recommended = row.recommended.map(() => false);
+  });
+  if (Array.isArray(data.checked)) {
+    data.checked.forEach((row, idx) => {
+      if (!row || !checkedState[idx]) return;
+      if (Array.isArray(row.must)) {
+        row.must.forEach((val, ci) => {
+          if (typeof val === 'boolean' && ci < checkedState[idx].must.length) {
+            checkedState[idx].must[ci] = val;
+          }
+        });
+      }
+      if (Array.isArray(row.recommended)) {
+        row.recommended.forEach((val, ci) => {
+          if (typeof val === 'boolean' && ci < checkedState[idx].recommended.length) {
+            checkedState[idx].recommended[ci] = val;
+          }
+        });
+      }
+    });
+  }
+  updateProgress();
+  if (migrated) saveProgress();
+}
+
 function saveProgress(){
+  const payload = { visited: Array.from(visited), checked: checkedState };
+
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      visited: Array.from(visited),
-      checked: checkedState
-    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   } catch (err) {
-    console.error('Could not save progress', err);
+    console.error('Could not save progress locally', err);
+  }
+
+  if (sb && currentSession) {
+    sb.from('checklist_progress')
+      .upsert({ id: currentSession.user.id, data: payload, updated_at: new Date().toISOString() })
+      .then(({ error }) => { if (error) console.error('Cloud progress save failed', error); });
   }
 }
 
-async function loadProgress(){
+async function pushProgressToCloud(userId){
+  const payload = { visited: Array.from(visited), checked: checkedState };
+  try {
+    await sb.from('checklist_progress')
+      .upsert({ id: userId, data: payload, updated_at: new Date().toISOString() });
+  } catch (err) {
+    console.error('Initial cloud push failed', err);
+  }
+}
+
+function loadProgress(){
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const data = JSON.parse(raw);
-    (data.visited || []).forEach(idx => {
-      visited.add(idx);
-      addVisitedBadge(idx);
-    });
-    if (Array.isArray(data.checked)) {
-      data.checked.forEach((row, idx) => {
-        if (!row || !checkedState[idx]) return;
-        if (Array.isArray(row.must)) {
-          row.must.forEach((val, ci) => {
-            if (typeof val === 'boolean' && ci < checkedState[idx].must.length) {
-              checkedState[idx].must[ci] = val;
-            }
-          });
-        }
-        if (Array.isArray(row.recommended)) {
-          row.recommended.forEach((val, ci) => {
-            if (typeof val === 'boolean' && ci < checkedState[idx].recommended.length) {
-              checkedState[idx].recommended[ci] = val;
-            }
-          });
-        }
-      });
-    }
-    updateProgress();
+    if (raw) applyProgressData(JSON.parse(raw));
   } catch (err) {
     // No saved progress yet — start fresh
+  }
+}
+
+async function handleProgressSync(session){
+  const syncEl = document.getElementById('syncStatus');
+  if (!sb) return;
+
+  if (session) {
+    const { data, error } = await sb.from('checklist_progress')
+      .select('data')
+      .eq('id', session.user.id)
+      .maybeSingle();
+
+    if (!error && data && data.data) {
+      applyProgressData(data.data);
+    } else if (!error) {
+      await pushProgressToCloud(session.user.id);
+    }
+    if (syncEl) syncEl.innerHTML = `✓ Synced as ${session.user.email}`;
+  } else {
+    if (syncEl) {
+      syncEl.innerHTML = 'Not synced — <a href="#" id="syncSignInLink">sign in</a> to save progress across devices';
+      const link = document.getElementById('syncSignInLink');
+      if (link) link.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('tabBtnMatch').click();
+      });
+    }
   }
 }
 
@@ -1239,6 +1463,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet
 const tabButtons = document.querySelectorAll('.tab-btn');
 let eventsTabInitialized = false;
 let matchTabInitialized = false;
+let tipsTabInitialized = false;
 
 tabButtons.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1254,6 +1479,10 @@ tabButtons.forEach(btn => {
     if (target === 'tab-match' && !matchTabInitialized) {
       matchTabInitialized = true;
       initMatchTab();
+    }
+    if (target === 'tab-tips' && !tipsTabInitialized) {
+      tipsTabInitialized = true;
+      initTipsTab();
     }
   });
 });
@@ -1609,13 +1838,6 @@ function renderTicketmasterEvents(events) {
 
 /* ---------------- Mentor / Mentee Match (Supabase-backed) ---------------- */
 
-const SUPABASE_URL = 'https://kbyyqayedkfbqzvqtget.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_nipXFJhW69UONKCcrVuNxQ_mXLchbc9'; // publishable key — safe to expose client-side
-
-const sb = (SUPABASE_URL.startsWith('http') && window.supabase)
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
-
 const BRANCHES = ['Army', 'Navy', 'Air Force', 'Marine Corps', 'Space Force', 'Coast Guard'];
 const ALL_STAGE_CODES = stops.map(s => s.t); // ["T-60","T-30","T-14","T-0","6 MO","1 YR","2+ YR"]
 const MENTOR_ELIGIBLE_STAGES = ['1 YR', '2+ YR'];
@@ -1648,7 +1870,7 @@ function showMatchScreen(name) {
   });
 }
 
-async function initMatchTab() {
+function initMatchTab() {
   if (!sb) {
     showMatchScreen('matchAuthGate');
     document.getElementById('authStatus').textContent = 'Backend not connected yet — add your Supabase URL and key in the app code.';
@@ -1663,10 +1885,9 @@ async function initMatchTab() {
 
   populateBranchSelect(document.getElementById('matchBranch'));
 
-  sb.auth.onAuthStateChange((_event, session) => handleSession(session));
-
-  const { data: { session } } = await sb.auth.getSession();
-  handleSession(session);
+  // global auth listener (registered at script load) already tracks currentSession —
+  // just react to whatever it currently is
+  handleSession(currentSession);
 }
 
 async function handleSendMagicLink() {
@@ -1925,6 +2146,148 @@ function renderMyProfileCard() {
   document.getElementById('signOutBtn').addEventListener('click', async () => {
     await sb.auth.signOut();
   });
+}
+
+/* ---------------- Quick Tips ---------------- */
+
+let myTipVotes = {}; // { tip_id: 1 | -1 }
+
+function initTipsTab() {
+  document.getElementById('tipSubmitBtn').addEventListener('click', handleSubmitTip);
+  document.getElementById('tipsSignInLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('tabBtnMatch').click();
+  });
+  loadTips();
+}
+
+function updateTipsAuthUI() {
+  const submitCard = document.getElementById('tipSubmitCard');
+  const signInNote = document.getElementById('tipsSignInNote');
+  const signedIn = !!currentSession;
+  submitCard.style.display = signedIn ? 'block' : 'none';
+  signInNote.style.display = signedIn ? 'none' : 'block';
+}
+
+async function loadTips() {
+  updateTipsAuthUI();
+  const statusEl = document.getElementById('tipsStatus');
+  const listEl = document.getElementById('tipsList');
+
+  if (!sb) {
+    statusEl.className = 'events-status error';
+    statusEl.textContent = 'Backend not connected yet.';
+    return;
+  }
+
+  statusEl.className = 'events-status';
+  statusEl.innerHTML = '<span class="spinner"></span><span>Loading tips…</span>';
+  listEl.innerHTML = '';
+
+  if (currentSession) {
+    const { data: votes } = await sb.from('tip_votes')
+      .select('tip_id, vote')
+      .eq('user_id', currentSession.user.id);
+    myTipVotes = {};
+    (votes || []).forEach(v => { myTipVotes[v.tip_id] = v.vote; });
+  } else {
+    myTipVotes = {};
+  }
+
+  const { data: tips, error } = await sb.rpc('get_tips_with_scores');
+  if (error) {
+    statusEl.className = 'events-status error';
+    statusEl.textContent = "Couldn't load tips right now.";
+    return;
+  }
+
+  if (!tips || tips.length === 0) {
+    statusEl.textContent = 'No tips yet — be the first to share one.';
+    return;
+  }
+
+  statusEl.textContent = '';
+  tips.forEach(t => listEl.appendChild(buildTipCard(t)));
+}
+
+function buildTipCard(t) {
+  const card = document.createElement('div');
+  card.className = 'tip-card';
+  const myVote = myTipVotes[t.id];
+  const when = new Date(t.created_at).toLocaleDateString();
+
+  card.innerHTML = `
+    <div class="tip-votes">
+      <button class="vote-btn up ${myVote === 1 ? 'active' : ''}" data-dir="1">▲</button>
+      <span class="tip-score">${t.score}</span>
+      <button class="vote-btn down ${myVote === -1 ? 'active' : ''}" data-dir="-1">▼</button>
+    </div>
+    <div class="tip-body">
+      <div class="tip-content">${escapeHtml(t.content)}</div>
+      <div class="tip-meta">Posted ${when}</div>
+    </div>
+  `;
+
+  card.querySelectorAll('.vote-btn').forEach(btn => {
+    btn.addEventListener('click', () => handleVote(t.id, parseInt(btn.getAttribute('data-dir'))));
+  });
+
+  return card;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+async function handleVote(tipId, direction) {
+  if (!currentSession) {
+    document.getElementById('tabBtnMatch').click();
+    return;
+  }
+  const existing = myTipVotes[tipId];
+
+  try {
+    if (existing === direction) {
+      // tapping the same arrow again removes the vote
+      await sb.from('tip_votes').delete().eq('tip_id', tipId).eq('user_id', currentSession.user.id);
+    } else {
+      await sb.from('tip_votes').upsert({ tip_id: tipId, user_id: currentSession.user.id, vote: direction });
+    }
+  } catch (err) {
+    console.error('Vote failed', err);
+  }
+  loadTips();
+}
+
+async function handleSubmitTip() {
+  const input = document.getElementById('tipInput');
+  const statusEl = document.getElementById('tipSubmitStatus');
+  const content = input.value.trim();
+
+  if (!content) {
+    statusEl.className = 'events-status error';
+    statusEl.textContent = 'Write something before posting.';
+    return;
+  }
+  if (!currentSession) {
+    document.getElementById('tabBtnMatch').click();
+    return;
+  }
+
+  statusEl.className = 'events-status';
+  statusEl.innerHTML = '<span class="spinner"></span><span>Posting…</span>';
+
+  const { error } = await sb.from('tips').insert({ author_id: currentSession.user.id, content });
+  if (error) {
+    statusEl.className = 'events-status error';
+    statusEl.textContent = `Couldn't post: ${error.message}`;
+    return;
+  }
+  input.value = '';
+  statusEl.textContent = '';
+  loadTips();
 }
 </script>
 </body>
