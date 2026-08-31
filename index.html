@@ -375,6 +375,15 @@
     border-radius:12px;
   }
   .tab-icon{font-size:20px; opacity:0.5;}
+  .tab-icon-wrap{position:relative; display:inline-block;}
+  .unread-dot{
+    position:absolute;
+    top:-2px; right:-4px;
+    width:9px; height:9px;
+    border-radius:50%;
+    background:var(--oldglory);
+    border:2px solid var(--card);
+  }
   .tab-label{
     font-family:'Baloo 2',sans-serif;
     font-weight:700;
@@ -977,6 +986,64 @@
     padding:11px 18px;
     cursor:pointer;
   }
+
+  .conversations-list{margin-top:6px;}
+  .convo-row{
+    all:unset;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:100%;
+    box-sizing:border-box;
+    background:var(--card);
+    border:2px solid var(--track);
+    border-radius:16px;
+    padding:12px 14px;
+    margin-bottom:8px;
+    cursor:pointer;
+  }
+  .convo-row.unread{border-color:var(--stblue);}
+  .convo-avatar{
+    flex-shrink:0;
+    width:38px; height:38px;
+    border-radius:50%;
+    background:var(--navy);
+    color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:15px;
+  }
+  .convo-body{flex:1; min-width:0;}
+  .convo-name{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .convo-preview{
+    font-size:12px;
+    font-weight:600;
+    color:var(--muted);
+    margin-top:2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .convo-row.unread .convo-preview{color:var(--ink); font-weight:700;}
+  .convo-badge{
+    flex-shrink:0;
+    min-width:20px;
+    height:20px;
+    padding:0 6px;
+    border-radius:10px;
+    background:var(--oldglory);
+    color:#fff;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:11px;
+    display:flex; align-items:center; justify-content:center;
+  }
 </style>
 </head>
 <body>
@@ -1140,6 +1207,19 @@
   <div id="glossaryEmpty" class="events-status" style="display:none;">No terms match your search.</div>
 </div>
 
+<div class="wrap tab-panel" id="tab-messages">
+  <div class="eyebrow">Your Conversations</div>
+  <h1>Messages</h1>
+  <div class="sub">Chats with your connected mentors and mentees.</div>
+
+  <div id="messagesSignInNote" class="tm-settings-note" style="display:none;">
+    <a href="#" id="messagesSignInLink">Sign in</a> to see your messages.
+  </div>
+
+  <div id="conversationsStatus" class="events-status"></div>
+  <div id="conversationsList" class="conversations-list"></div>
+</div>
+
 <nav class="tabbar" id="tabbar">
   <button class="tab-btn active" data-tab="tab-path" id="tabBtnPath">
     <span class="tab-icon">🗺️</span>
@@ -1153,6 +1233,13 @@
     <span class="tab-icon">🤝</span>
     <span class="tab-label">Match</span>
   </button>
+  <button class="tab-btn" data-tab="tab-messages" id="tabBtnMessages">
+    <span class="tab-icon-wrap">
+      <span class="tab-icon">💬</span>
+      <span class="unread-dot" id="unreadDot" style="display:none;"></span>
+    </span>
+    <span class="tab-label">Messages</span>
+  </button>
   <button class="tab-btn" data-tab="tab-tips" id="tabBtnTips">
     <span class="tab-icon">💡</span>
     <span class="tab-label">Tips</span>
@@ -1162,6 +1249,7 @@
     <span class="tab-label">Glossary</span>
   </button>
 </nav>
+
 
 
 <div class="backdrop" id="backdrop"></div>
@@ -1211,12 +1299,23 @@ let currentSession = null;
 
 function onGlobalAuthChange(session) {
   currentSession = session;
+  myId = session ? session.user.id : null;
   handleProgressSync(session);
   if (typeof matchTabInitialized !== 'undefined' && matchTabInitialized) {
     handleSession(session);
   }
   if (typeof tipsTabInitialized !== 'undefined' && tipsTabInitialized) {
     loadTips();
+  }
+  if (session) {
+    subscribeGlobalMessages();
+    refreshUnreadBadge();
+  } else {
+    unsubscribeGlobalMessages();
+    setUnreadBadge(0);
+  }
+  if (typeof messagesTabInitialized !== 'undefined' && messagesTabInitialized) {
+    loadConversations();
   }
 }
 
@@ -1670,6 +1769,7 @@ let eventsTabInitialized = false;
 let matchTabInitialized = false;
 let tipsTabInitialized = false;
 let glossaryTabInitialized = false;
+let messagesTabInitialized = false;
 
 tabButtons.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1693,6 +1793,14 @@ tabButtons.forEach(btn => {
     if (target === 'tab-glossary' && !glossaryTabInitialized) {
       glossaryTabInitialized = true;
       initGlossaryTab();
+    }
+    if (target === 'tab-messages') {
+      if (!messagesTabInitialized) {
+        messagesTabInitialized = true;
+        initMessagesTab();
+      } else {
+        loadConversations();
+      }
     }
   });
 });
@@ -2637,6 +2745,7 @@ async function openChat(connectionId, partnerId, partnerName) {
 
   await loadChatHistory(connectionId);
   subscribeToChat(connectionId);
+  markConversationRead(connectionId);
 }
 
 function closeChat() {
@@ -2646,6 +2755,24 @@ function closeChat() {
     currentChatChannel = null;
   }
   currentChatConnectionId = null;
+  refreshUnreadBadge();
+  if (typeof messagesTabInitialized !== 'undefined' && messagesTabInitialized) {
+    loadConversations();
+  }
+}
+
+async function markConversationRead(connectionId) {
+  if (!sb || !myId) return;
+  try {
+    await sb.from('conversation_reads').upsert({
+      connection_id: connectionId,
+      user_id: myId,
+      last_read_at: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('Could not mark conversation read', err);
+  }
+  refreshUnreadBadge();
 }
 
 async function loadChatHistory(connectionId) {
@@ -2701,6 +2828,7 @@ function subscribeToChat(connectionId) {
       if (payload.new.sender_id === myId) return;
       appendChatBubble(payload.new);
       scrollChatToBottom();
+      markConversationRead(connectionId);
     })
     .subscribe();
 }
@@ -2722,6 +2850,114 @@ async function handleSendMessage(e) {
     content
   });
   if (error) console.error('Send failed', error);
+}
+
+/* ---------------- Messages tab & unread badge ---------------- */
+
+let globalMessagesChannel = null;
+
+function initMessagesTab() {
+  document.getElementById('messagesSignInLink').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('tabBtnMatch').click();
+  });
+  loadConversations();
+}
+
+async function loadConversations() {
+  const statusEl = document.getElementById('conversationsStatus');
+  const listEl = document.getElementById('conversationsList');
+  const signInNote = document.getElementById('messagesSignInNote');
+
+  if (!currentSession) {
+    signInNote.style.display = 'block';
+    statusEl.textContent = '';
+    listEl.innerHTML = '';
+    return;
+  }
+  signInNote.style.display = 'none';
+
+  if (!sb) {
+    statusEl.className = 'events-status error';
+    statusEl.textContent = 'Backend not connected yet.';
+    return;
+  }
+
+  statusEl.className = 'events-status';
+  statusEl.innerHTML = '<span class="spinner"></span><span>Loading conversations…</span>';
+  listEl.innerHTML = '';
+
+  const { data, error } = await sb.rpc('get_my_conversations');
+  if (error) {
+    statusEl.className = 'events-status error';
+    statusEl.textContent = "Couldn't load conversations right now.";
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    statusEl.textContent = 'No conversations yet — connect with a mentor or mentee in the Match tab.';
+    return;
+  }
+
+  statusEl.textContent = '';
+  data.forEach(c => listEl.appendChild(buildConversationRow(c)));
+
+  refreshUnreadBadge();
+}
+
+function buildConversationRow(c) {
+  const row = document.createElement('button');
+  const unread = c.unread_count > 0;
+  row.className = 'convo-row' + (unread ? ' unread' : '');
+  const initial = (c.partner_name || '?').charAt(0).toUpperCase();
+  const preview = c.last_message ? c.last_message : 'Say hello';
+  const when = c.last_message_at ? new Date(c.last_message_at).toLocaleDateString() : '';
+
+  row.innerHTML = `
+    <div class="convo-avatar">${initial}</div>
+    <div class="convo-body">
+      <div class="convo-name">${c.partner_name}</div>
+      <div class="convo-preview">${escapeHtml(preview)}${when ? ' · ' + when : ''}</div>
+    </div>
+    ${unread ? `<div class="convo-badge">${c.unread_count}</div>` : ''}
+  `;
+  row.addEventListener('click', () => openChat(c.connection_id, c.partner_id, c.partner_name));
+  return row;
+}
+
+function setUnreadBadge(count) {
+  const dot = document.getElementById('unreadDot');
+  if (dot) dot.style.display = count > 0 ? 'block' : 'none';
+}
+
+async function refreshUnreadBadge() {
+  if (!sb || !currentSession) { setUnreadBadge(0); return; }
+  const { data, error } = await sb.rpc('get_unread_message_count');
+  if (!error) setUnreadBadge(data || 0);
+}
+
+function subscribeGlobalMessages() {
+  if (!sb || globalMessagesChannel) return;
+  globalMessagesChannel = sb
+    .channel('global-messages')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+      if (payload.new.sender_id === myId) return;
+      refreshUnreadBadge();
+      if (typeof messagesTabInitialized !== 'undefined' && messagesTabInitialized) {
+        const messagesTab = document.getElementById('tab-messages');
+        if (messagesTab && messagesTab.classList.contains('active')) {
+          loadConversations();
+        }
+      }
+    })
+    .subscribe();
+}
+
+function unsubscribeGlobalMessages() {
+  if (globalMessagesChannel) {
+    sb.removeChannel(globalMessagesChannel);
+    globalMessagesChannel = null;
+  }
 }
 </script>
 </body>
