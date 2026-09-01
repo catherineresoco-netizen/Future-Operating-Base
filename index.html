@@ -4274,16 +4274,14 @@ If the symptom could plausibly map to 2-3 different diagnostic codes (common for
 Keep the whole response compact so it never gets cut off: at most 3 matches, at most 5 criteria entries per match, at most 3 key_terms per match, at most 2 sources per match. Write plain_summary and definitions as single tight sentences, not paragraphs. Output the JSON only — no commentary before or after it.`;
 
     try{
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/cfr-lookup`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 4000,
-          system: system,
-          messages: [{ role: "user", content: query }],
-          tools: [{ type: "web_search_20250305", name: "web_search" }]
-        })
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+          "apikey": SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify({ query, system })
       });
 
       const data = await response.json();
