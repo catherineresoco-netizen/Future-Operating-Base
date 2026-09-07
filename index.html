@@ -88,6 +88,8 @@
     --ht07:#1E3A8A;    --ht07-sh:#152961;
     /* Hot Takes 08 — Sunlit Fog (More) */
     --ht08:#3B82F6;    --ht08-sh:#295BAC;
+    /* Hot Takes — flat accent (matches Education's gradient) for tabs without checkpoints */
+    --hottakes-accent:#5A7FC7;    --hottakes-accent-sh:#3F598B;
 
     --tab-accent:var(--red2);
     --tab-accent-sh:var(--red2-sh);
@@ -1990,8 +1992,8 @@ function paletteSlice(paletteName, index, total){
   return `linear-gradient(135deg, ${start} 0%, ${end} 100%)`;
 }
 // Backward-compatible aliases for the signature/Path palette
-function signatureColorAt(t){ return paletteColorAt('skyline', t); }
-function signatureSlice(index, total){ return paletteSlice('skyline', index, total);
+function signatureColorAt(t){ return paletteColorAt('hottakes', t); }
+function signatureSlice(index, total){ return paletteSlice('hottakes', index, total);
 }
 
 /* ---------------- Education Path (GI Bill / VR&E) ---------------- */
@@ -2570,12 +2572,12 @@ function buildHomePath() {
       <div class="journal-card-inner">
         <button class="journal-header" id="homeheader-${i}" type="button"
           aria-expanded="false" aria-controls="homebody-${i}">
-          <div class="journal-icon" aria-hidden="true" style="background:${paletteSlice('apricotmist', i, HOME_STOPS.length)};">${iconSvg(s.icon)}</div>
+          <div class="journal-icon" aria-hidden="true" style="background:${paletteSlice('hottakes', i, HOME_STOPS.length)};">${iconSvg(s.icon)}</div>
           <div class="journal-header-text">
             <div class="journal-date-label">Step ${i + 1}</div>
             <div class="journal-title">${s.title}</div>
           </div>
-          <div class="journal-check-badge" id="homebadge-${i}" style="display:none; background:${paletteSlice('apricotmist', i, HOME_STOPS.length)};" aria-hidden="true">✓</div>
+          <div class="journal-check-badge" id="homebadge-${i}" style="display:none; background:${paletteSlice('hottakes', i, HOME_STOPS.length)};" aria-hidden="true">✓</div>
           <span class="journal-chevron" aria-hidden="true">▾</span>
         </button>
         <div class="journal-body" id="homebody-${i}" style="display:none;">
@@ -2639,7 +2641,7 @@ function updateHomeProgress() {
     const pip = document.createElement('div');
     pip.className = 'pip' + (isDone ? ' on' : '');
     if (isDone) {
-      pip.style.background = paletteColorAt('apricotmist', (i + 0.5) / HOME_STOPS.length);
+      pip.style.background = paletteColorAt('hottakes', (i + 0.5) / HOME_STOPS.length);
     }
     prog.insertBefore(pip, label);
   });
@@ -2665,7 +2667,7 @@ function updateHomeRail(){
       dot = document.createElement('div');
       dot.className = 'journal-rail-dot';
       dot.id = `homeraildot-${i}`;
-      dot.style.background = paletteSlice('apricotmist', i, HOME_STOPS.length);
+      dot.style.background = paletteSlice('hottakes', i, HOME_STOPS.length);
       rail.appendChild(dot);
     }
     dot.style.top = centerY + 'px';
@@ -3360,9 +3362,17 @@ applyPersonalization();
 loadProgress();
 
 if (document.fonts && document.fonts.ready) {
-  document.fonts.ready.then(() => updateJournalRail());
+  document.fonts.ready.then(() => {
+    updateJournalRail();
+    updateEduRail();
+    updateHomeRail();
+  });
 }
-window.addEventListener('resize', () => updateJournalRail());
+window.addEventListener('resize', () => {
+  updateJournalRail();
+  updateEduRail();
+  updateHomeRail();
+});
 
 /* ---------------- Tabs ---------------- */
 
